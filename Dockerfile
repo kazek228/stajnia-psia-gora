@@ -1,6 +1,9 @@
 # Build stage
 FROM node:20-alpine AS builder
 
+# Install OpenSSL for Prisma
+RUN apk add --no-cache openssl openssl-dev libc6-compat
+
 WORKDIR /app
 
 # Copy package files
@@ -8,35 +11,49 @@ COPY package*.json ./
 COPY server/package*.json ./server/
 COPY client/package*.json ./client/
 
-# Install dependencies
-RUN npm install
-RUN cd server && npm install
-RUN cd client && npm install
+# Copy prisma schema BEFORE npm install (needed for postinstall)
+COPY server/prisma ./server/prisma
 
-# Copy source code
+# Install root dependencies (without running scripts)
+RUN npm install --ignore-scripts
+
+# Install server dependencies
+WORKDIR /app/server
+RUN npm install --ignore-scripts
+RUN npx prisma generate --schema=prisma/schema.prisma
+
+# Install client dependencies
+WORKDIR /app/client
+RUN npm install
+
+# Copy all source code
+WORKDIR /app
 COPY . .
 
 # Build client
-RUN cd client && npm run build
+WORKDIR /app/client
+RUN npm run build
 
 # Build server
-RUN cd server && npx prisma generate && npm run build
+WORKDIR /app/server
+RUN npm run build
 
 # Production stage
 FROM node:20-alpine AS production
 
+# Install OpenSSL for Prisma runtime
+RUN apk add --no-cache openssl libc6-compat
+
 WORKDIR /app
 
-# Copy built files
-COPY --from=builder /app/server/dist ./server/dist
-COPY --from=builder /app/server/package*.json ./server/
-COPY --from=builder /app/server/prisma ./server/prisma
-COPY --from=builder /app/server/node_modules ./server/node_modules
-COPY --from=builder /app/client/dist ./client/dist
+# Copy server built files
+COPY --from=builder /app/server/dist ./dist
+COPY --from=builder /app/server/package*.json ./
+COPY --from=builder /app/server/prisma ./prisma
+COPY --from=builder /app/server/node_modules ./node_modules
 
-# Install production dependencies only
-WORKDIR /app/server
-RUN npm prune --production
+# Copy client build for static serving
+COPY --from=builder /app/client/dist ./public
 
 # Expose port
 EXPOSE 3001
