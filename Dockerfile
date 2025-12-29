@@ -1,7 +1,7 @@
 # Build stage
 FROM node:20-alpine AS builder
 
-# Install OpenSSL for Prisma
+# Install OpenSSL and build dependencies for Prisma
 RUN apk add --no-cache openssl openssl-dev libc6-compat
 
 WORKDIR /app
