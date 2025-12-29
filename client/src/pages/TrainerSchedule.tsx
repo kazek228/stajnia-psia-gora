@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { pl, enUS } from 'date-fns/locale';
-import { Calendar, PawPrint, User, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, PawPrint, User, Clock } from 'lucide-react';
 
 const Horse = PawPrint;
 import api from '../services/api';
