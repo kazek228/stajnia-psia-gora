@@ -87,32 +87,48 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className="min-h-screen bg-nature-gradient">
       {/* Mobile header */}
-      <header className="lg:hidden bg-forest-gradient text-white p-4 flex items-center justify-between sticky top-0 z-50 shadow-lg">
+      <header className="lg:hidden bg-forest-gradient text-white p-4 flex items-center justify-between sticky top-0 z-50 shadow-lg h-16">
         <div className="flex items-center gap-3">
           <Horse className="w-8 h-8" />
-          <span className="font-display font-semibold">{t('appNameShort')}</span>
+          <span className="font-display font-semibold text-sm">{t('appNameShort')}</span>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={toggleLanguage}
             className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+            aria-label={language.toUpperCase()}
           >
             <Globe className="w-5 h-5" />
-            <span className="sr-only">{language.toUpperCase()}</span>
           </button>
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+            aria-label="Menu"
           >
             {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
       </header>
 
-      {/* Mobile menu */}
+      {/* Mobile menu overlay */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 top-16 z-40 bg-forest-gradient/95 backdrop-blur-sm animate-fade-in">
-          <nav className="p-4 space-y-2">
+        <div 
+          className="lg:hidden fixed inset-0 z-40 bg-black/50"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Mobile menu drawer */}
+      <div className={`lg:hidden fixed top-16 right-0 bottom-0 w-72 max-w-[85vw] z-50 bg-forest-gradient transform transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div className="flex flex-col h-full overflow-y-auto">
+          {/* User info */}
+          <div className="p-4 border-b border-white/20">
+            <p className="font-medium text-white">{user?.name}</p>
+            <p className="text-sm text-white/60">{getRoleNames(user?.role || '')}</p>
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex-1 p-4 space-y-2">
             {navItems.map((item) => (
               <NavLink
                 key={item.to}
@@ -130,6 +146,20 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <span>{item.label}</span>
               </NavLink>
             ))}
+          </nav>
+
+          {/* Bottom actions */}
+          <div className="p-4 border-t border-white/20 space-y-2">
+            <button
+              onClick={() => {
+                toggleLanguage();
+                setIsMobileMenuOpen(false);
+              }}
+              className="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:bg-white/10 hover:text-white transition-colors w-full"
+            >
+              <Globe className="w-5 h-5" />
+              <span>{language === 'pl' ? 'English' : 'Polski'}</span>
+            </button>
             <button
               onClick={handleLogout}
               className="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:bg-white/10 hover:text-white transition-colors w-full"
@@ -137,9 +167,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <LogOut className="w-5 h-5" />
               <span>{t('logout')}</span>
             </button>
-          </nav>
+          </div>
         </div>
-      )}
+      </div>
 
       <div className="flex">
         {/* Desktop sidebar */}
