@@ -68,7 +68,7 @@ const resources = {
       startTime: 'Godzina rozpoczęcia',
       endTime: 'Godzina zakończenia',
       duration: 'Czas trwania (min)',
-      sundayPlanner: 'Planer niedzielny',
+      sundayPlanner: 'Planer tygodniowy',
       addSession: 'Dodaj sesję',
       editSession: 'Edytuj sesję',
       noSchedules: 'Brak zaplanowanych jazd',
