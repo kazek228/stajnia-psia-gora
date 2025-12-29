@@ -6,37 +6,19 @@ RUN apk add --no-cache openssl openssl-dev libc6-compat
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-COPY server/package*.json ./server/
-COPY client/package*.json ./client/
-
-# Copy prisma schema BEFORE npm install (needed for postinstall)
-COPY server/prisma ./server/prisma
-
-# Install root dependencies (without running scripts)
-RUN npm install --ignore-scripts
-
-# Install server dependencies
-WORKDIR /app/server
-RUN npm install --ignore-scripts
-RUN npx prisma generate --schema=prisma/schema.prisma
-
-# Install client dependencies
-WORKDIR /app/client
-RUN npm install
-
-# Copy all source code
-WORKDIR /app
+# Copy all source code first
 COPY . .
 
-# Build client
-WORKDIR /app/client
-RUN npm run build
+# Install dependencies
+RUN npm install
+RUN cd server && npm install
+RUN cd client && npm install
 
-# Build server
-WORKDIR /app/server
-RUN npm run build
+# Build client
+RUN cd client && npm run build
+
+# Build server (includes prisma generate)
+RUN cd server && npm run build
 
 # Production stage
 FROM node:20-alpine AS production
