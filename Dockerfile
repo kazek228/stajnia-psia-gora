@@ -30,11 +30,16 @@ RUN apk add --no-cache openssl libc6-compat
 
 WORKDIR /app
 
-# Copy server built files
-COPY --from=builder /app/server/dist ./dist
+# Copy server package files and install production deps
 COPY --from=builder /app/server/package*.json ./
 COPY --from=builder /app/server/prisma ./prisma
-COPY --from=builder /app/server/node_modules ./node_modules
+RUN npm install --omit=dev
+
+# Generate Prisma client
+RUN npx prisma generate --schema=prisma/schema.prisma
+
+# Copy server built files
+COPY --from=builder /app/server/dist ./dist
 
 # Copy client build for static serving
 COPY --from=builder /app/client/dist ./public
@@ -47,4 +52,3 @@ ENV NODE_ENV=production
 
 # Start server
 CMD ["node", "dist/index.js"]
-# Cache buster: 2025-12-29 12:50:22
