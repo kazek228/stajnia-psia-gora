@@ -9,16 +9,18 @@ WORKDIR /app
 # Copy all source code first
 COPY . .
 
-# Install dependencies
+# Install root dependencies
 RUN npm install
-RUN cd server && npm install
-RUN cd client && npm install
 
-# Build client
-RUN cd client && npm run build
+# Install and build server
+WORKDIR /app/server
+RUN npm install
+RUN npm run build
 
-# Build server (includes prisma generate)
-RUN cd server && npm run build
+# Install and build client
+WORKDIR /app/client
+RUN npm install
+RUN npm run build
 
 # Production stage
 FROM node:20-alpine AS production
