@@ -323,22 +323,21 @@ const UsersPage = () => {
                 />
               </div>
 
-              {!editingUser && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Role *</label>
-                  <select
-                    value={formData.role}
-                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                    className="input"
-                  >
-                    <option value="RIDER">{t('rider')}</option>
-                    <option value="TRAINER">{t('trainer')}</option>
-                    <option value="STABLE_HAND">{t('stableHand')}</option>
-                  </select>
-                </div>
-              )}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Role *</label>
+                <select
+                  value={formData.role}
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                  className="input"
+                >
+                  <option value="RIDER">{t('rider')}</option>
+                  <option value="TRAINER">{t('trainer')}</option>
+                  <option value="STABLE_HAND">{t('stableHand')}</option>
+                  {editingUser && <option value="ADMIN">Admin</option>}
+                </select>
+              </div>
 
-              {(formData.role === 'RIDER' || (editingUser && editingUser.role === 'RIDER')) && (
+              {(formData.role === 'RIDER') && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     {t('level')} *
@@ -355,8 +354,7 @@ const UsersPage = () => {
                 </div>
               )}
 
-              {(formData.role === 'TRAINER' ||
-                (editingUser && editingUser.role === 'TRAINER')) && (
+              {(formData.role === 'TRAINER') && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Specjalizacja
