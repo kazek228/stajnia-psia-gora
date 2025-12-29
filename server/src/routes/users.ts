@@ -52,7 +52,7 @@ router.get('/role/:role', authenticateToken, async (req, res) => {
 router.get('/riders', authenticateToken, async (_, res) => {
   try {
     const riders = await prisma.user.findMany({
-      where: { role: 'RIDER' },
+      where: { role: { contains: 'RIDER' } },
       select: {
         id: true,
         name: true,
@@ -70,7 +70,7 @@ router.get('/riders', authenticateToken, async (_, res) => {
 router.get('/trainers', authenticateToken, async (_, res) => {
   try {
     const trainers = await prisma.user.findMany({
-      where: { role: 'TRAINER' },
+      where: { role: { contains: 'TRAINER' } },
       select: {
         id: true,
         name: true,

@@ -33,7 +33,11 @@ export const requireRole = (...roles: string[]) => {
       return res.status(401).json({ error: 'Not authenticated' });
     }
     
-    if (!roles.includes(req.user.role)) {
+    // Support multi-role: user.role can be "TRAINER,ADMIN"
+    const userRoles = req.user.role.split(',').map(r => r.trim());
+    const hasRequiredRole = roles.some(role => userRoles.includes(role));
+    
+    if (!hasRequiredRole) {
       return res.status(403).json({ error: 'Insufficient permissions' });
     }
     

@@ -16,8 +16,8 @@ router.get('/', authenticateToken, requireRole('ADMIN'), async (req, res) => {
     // Get counts
     const [horsesCount, ridersCount, trainersCount, todaySchedulesCount] = await Promise.all([
       prisma.horse.count({ where: { isActive: true } }),
-      prisma.user.count({ where: { role: 'RIDER' } }),
-      prisma.user.count({ where: { role: 'TRAINER' } }),
+      prisma.user.count({ where: { role: { contains: 'RIDER' } } }),
+      prisma.user.count({ where: { role: { contains: 'TRAINER' } } }),
       prisma.schedule.count({
         where: {
           date: { gte: today, lte: endOfDay },
