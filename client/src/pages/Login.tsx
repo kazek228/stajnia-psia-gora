@@ -119,14 +119,6 @@ const Login = () => {
             </button>
           </div>
         </div>
-
-        {/* Demo credentials */}
-        <div className="mt-6 p-4 bg-white/50 rounded-xl text-center text-sm text-gray-600">
-          <p className="font-medium mb-2">Demo:</p>
-          <p>Admin: admin@stajnia.pl / admin123</p>
-          <p>Jeździec: maria@example.com / rider123</p>
-          <p>Stajenny: tomek@stajnia.pl / stable123</p>
-        </div>
       </div>
     </div>
   );

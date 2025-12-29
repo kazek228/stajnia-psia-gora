@@ -143,6 +143,74 @@ app.get('/api/seed', async (_, res) => {
   }
 });
 
+// Reset and reseed - use carefully!
+app.get('/api/reseed', async (_, res) => {
+  try {
+    // Delete all data
+    await prisma.schedule.deleteMany();
+    await prisma.horse.deleteMany();
+    await prisma.user.deleteMany();
+
+    const hashedPassword = await bcrypt.hash('admin123', 10);
+    const trainerPassword = await bcrypt.hash('trainer123', 10);
+    const riderPassword = await bcrypt.hash('rider123', 10);
+    const stablePassword = await bcrypt.hash('stable123', 10);
+
+    await prisma.user.createMany({
+      data: [
+        { email: 'admin@stajnia.pl', password: hashedPassword, name: 'Administrator', role: 'ADMIN' },
+        { email: 'anna@stajnia.pl', password: trainerPassword, name: 'Anna Kowalska', role: 'TRAINER' },
+        { email: 'maria@example.com', password: riderPassword, name: 'Maria Nowak', role: 'RIDER', level: 'INTERMEDIATE' },
+        { email: 'tomek@stajnia.pl', password: stablePassword, name: 'Tomek Wiśniewski', role: 'STABLE_HAND' },
+      ]
+    });
+
+    await prisma.horse.createMany({
+      data: [
+        { name: 'Bursztyn', breed: 'Koń małopolski', level: 'ADVANCED', maxWorkHours: 4, restAfterWork: 1, postTrainingMeal: 'Owies 3kg', notes: 'Doświadczony koń' },
+        { name: 'Luna', breed: 'Polski koń szlachetny', level: 'INTERMEDIATE', maxWorkHours: 3, restAfterWork: 1, postTrainingMeal: 'Owies 2.5kg', notes: 'Spokojna klacz' },
+        { name: 'Grom', breed: 'Hanowerski', level: 'ADVANCED', maxWorkHours: 2, restAfterWork: 2, postTrainingMeal: 'Dieta specjalna', notes: 'Unikać długich treningów' },
+        { name: 'Śnieżka', breed: 'Kuc szetlandzki', level: 'BEGINNER', maxWorkHours: 2, restAfterWork: 1, postTrainingMeal: 'Ograniczone porcje', notes: 'Dla początkujących' },
+      ]
+    });
+
+    res.json({ 
+      message: 'Database reset and reseeded!',
+      credentials: {
+        admin: { email: 'admin@stajnia.pl', password: 'admin123' },
+        trainer: { email: 'anna@stajnia.pl', password: 'trainer123' },
+        rider: { email: 'maria@example.com', password: 'rider123' },
+        stableHand: { email: 'tomek@stajnia.pl', password: 'stable123' },
+      }
+    });
+  } catch (error) {
+    console.error('Reseed error:', error);
+    res.status(500).json({ error: 'Failed to reseed', details: String(error) });
+  }
+});
+
+// Change password endpoint - use: /api/change-password?email=admin@stajnia.pl&newPassword=NoweHaslo123
+app.get('/api/change-password', async (req, res) => {
+  try {
+    const { email, newPassword } = req.query;
+    
+    if (!email || !newPassword) {
+      return res.status(400).json({ error: 'Provide email and newPassword as query params' });
+    }
+
+    const hashedPassword = await bcrypt.hash(String(newPassword), 10);
+    
+    const user = await prisma.user.update({
+      where: { email: String(email) },
+      data: { password: hashedPassword },
+    });
+
+    res.json({ message: `Password changed for ${user.email}` });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to change password', details: String(error) });
+  }
+});
+
 // Serve static files in production
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../public')));
