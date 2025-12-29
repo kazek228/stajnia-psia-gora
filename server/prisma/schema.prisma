@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// User model for all roles (Admin, Rider, Trainer, Stable Hand)
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  name          String
+  role          String    // ADMIN, RIDER, TRAINER, STABLE_HAND
+  level         String?   // For riders: BEGINNER, INTERMEDIATE, ADVANCED
+  specialization String? // For trainers
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  riderSchedules    Schedule[] @relation("RiderSchedules")
+  trainerSchedules  Schedule[] @relation("TrainerSchedules")
+}
+
+// Horse model with welfare and feeding information
+model Horse {
+  id              String    @id @default(cuid())
+  name            String
+  breed           String?
+  level           String    // BEGINNER, INTERMEDIATE, ADVANCED
+  maxWorkHours    Int       @default(4) // Maximum hours per day
+  restAfterWork   Int       @default(1) // Required rest in hours after 2h work
+  postTrainingMeal String?  // Description of meal after training
+  notes           String?
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  schedules       Schedule[]
+}
+
+// Schedule model for Sunday planner
+model Schedule {
+  id            String    @id @default(cuid())
+  date          DateTime
+  startTime     String    // e.g., "09:00"
+  endTime       String    // e.g., "10:00"
+  duration      Int       // Duration in minutes
+  
+  // Relations
+  horseId       String
+  horse         Horse     @relation(fields: [horseId], references: [id])
+  riderId       String
+  rider         User      @relation("RiderSchedules", fields: [riderId], references: [id])
+  trainerId     String
+  trainer       User      @relation("TrainerSchedules", fields: [trainerId], references: [id])
+  
+  // Status
+  status        String    @default("SCHEDULED") // SCHEDULED, COMPLETED, CANCELLED
+  feedingDone   Boolean   @default(false)
+  notes         String?
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([date])
+  @@index([horseId, date])
+  @@index([riderId, date])
+  @@index([trainerId, date])
+}
+
+// Feeding task model for stable hands
+model FeedingTask {
+  id            String    @id @default(cuid())
+  scheduleId    String?
+  horseName     String
+  endTime       String    // When the horse finishes training
+  mealDescription String
+  date          DateTime
+  completed     Boolean   @default(false)
+  completedAt   DateTime?
+  completedBy   String?
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([date])
+}

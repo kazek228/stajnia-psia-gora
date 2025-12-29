@@ -1,0 +1,24 @@
+{
+  "name": "stajnia-psia-gora",
+  "version": "1.0.0",
+  "description": "Horse Stable Management System - Stajnia Wolnowybiegowa na Psiej Górze",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:client": "cd client && npm run dev",
+    "dev:server": "cd server && npm run dev",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "cd client && npm run build",
+    "build:server": "cd server && npm run build",
+    "install:all": "npm install && cd client && npm install && cd ../server && npm install",
+    "db:push": "cd server && npx prisma db push",
+    "db:seed": "cd server && npx ts-node src/seed.ts"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
