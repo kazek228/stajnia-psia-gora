@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth';
 import horseRoutes from './routes/horses';
@@ -17,7 +18,7 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-// Routes
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/horses', horseRoutes);
 app.use('/api/users', userRoutes);
@@ -29,6 +30,16 @@ app.use('/api/dashboard', dashboardRoutes);
 app.get('/api/health', (_, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+// Serve static files in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../public')));
+  
+  // Handle React Router - serve index.html for all non-API routes
+  app.get('*', (_, res) => {
+    res.sendFile(path.join(__dirname, '../public/index.html'));
+  });
+}
 
 app.listen(PORT, () => {
   console.log(`🐴 Server running on http://localhost:${PORT}`);
