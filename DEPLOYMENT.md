@@ -1,6 +1,7 @@
 # ===========================================
 # 🚀 DEPLOYMENT GUIDE - Stajnia Psia Góra
 # ===========================================
+# Last updated: 2024-12-29
 
 ## Quick Deploy Options
 
