@@ -51,4 +51,4 @@ EXPOSE 3001
 ENV NODE_ENV=production
 
 # Start server with database sync
-CMD ["sh", "-c", "echo 'Starting...' && npx prisma db push --schema=prisma/schema.prisma --skip-generate && echo 'DB synced, starting node...' && ls -la && ls -la dist/ && node dist/index.js"]
+CMD sh -c "echo '=== Starting deployment ===' && npx prisma db push --schema=prisma/schema.prisma --skip-generate 2>&1 && echo '=== DB synced ===' && echo '=== Files in /app ===' && ls -la && echo '=== Files in dist ===' && ls -la dist/ && echo '=== Starting Node ===' && node dist/index.js 2>&1"
