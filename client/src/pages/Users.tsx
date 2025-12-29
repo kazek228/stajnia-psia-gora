@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Users, Plus, Pencil, Trash2, X, AlertCircle, GraduationCap, User } from 'lucide-react';
+import { Users, Plus, Pencil, Trash2, X, AlertCircle, GraduationCap, User, Shield } from 'lucide-react';
 import api from '../services/api';
 
 interface UserData {
@@ -11,6 +11,11 @@ interface UserData {
   level?: string;
   specialization?: string;
 }
+
+// Helper to check if user has a specific role
+const hasRole = (userRole: string, role: string) => {
+  return userRole.split(',').includes(role);
+};
 
 const UsersPage = () => {
   const { t } = useTranslation();
@@ -25,7 +30,7 @@ const UsersPage = () => {
     name: '',
     email: '',
     password: '',
-    role: 'RIDER',
+    roles: [] as string[],
     level: 'BEGINNER',
     specialization: '',
   });
@@ -52,7 +57,7 @@ const UsersPage = () => {
         name: user.name,
         email: user.email,
         password: '',
-        role: user.role,
+        roles: user.role.split(','),
         level: user.level || 'BEGINNER',
         specialization: user.specialization || '',
       });
@@ -62,7 +67,7 @@ const UsersPage = () => {
         name: '',
         email: '',
         password: '',
-        role: activeTab,
+        roles: [activeTab],
         level: 'BEGINNER',
         specialization: '',
       });
@@ -77,29 +82,45 @@ const UsersPage = () => {
     setError('');
   };
 
+  const toggleRole = (role: string) => {
+    setFormData(prev => ({
+      ...prev,
+      roles: prev.roles.includes(role)
+        ? prev.roles.filter(r => r !== role)
+        : [...prev.roles, role]
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
+    if (formData.roles.length === 0) {
+      setError('Wybierz przynajmniej jedną rolę');
+      return;
+    }
+
     try {
+      const roleString = formData.roles.join(',');
+      
       if (editingUser) {
         const updateData: any = {
           name: formData.name,
           email: formData.email,
-          role: formData.role,
+          role: roleString,
         };
         if (formData.password) {
           updateData.password = formData.password;
         }
-        if (formData.role === 'RIDER') {
+        if (formData.roles.includes('RIDER')) {
           updateData.level = formData.level;
         }
-        if (formData.role === 'TRAINER') {
+        if (formData.roles.includes('TRAINER')) {
           updateData.specialization = formData.specialization;
         }
         await api.put(`/users/${editingUser.id}`, updateData);
       } else {
-        await api.post('/auth/register', formData);
+        await api.post('/auth/register', { ...formData, role: roleString });
       }
       fetchUsers();
       closeModal();
@@ -119,7 +140,7 @@ const UsersPage = () => {
     }
   };
 
-  const filteredUsers = users.filter((user) => user.role === activeTab);
+  const filteredUsers = users.filter((user) => hasRole(user.role, activeTab));
 
   const getLevelBadge = (level: string) => {
     switch (level) {
@@ -178,7 +199,7 @@ const UsersPage = () => {
           }`}
         >
           <Users className="w-4 h-4 inline mr-2" />
-          {t('riders')} ({users.filter((u) => u.role === 'RIDER').length})
+          {t('riders')} ({users.filter((u) => hasRole(u.role, 'RIDER')).length})
         </button>
         <button
           onClick={() => setActiveTab('TRAINER')}
@@ -189,7 +210,7 @@ const UsersPage = () => {
           }`}
         >
           <GraduationCap className="w-4 h-4 inline mr-2" />
-          {t('trainers')} ({users.filter((u) => u.role === 'TRAINER').length})
+          {t('trainers')} ({users.filter((u) => hasRole(u.role, 'TRAINER')).length})
         </button>
         <button
           onClick={() => setActiveTab('STABLE_HAND')}
@@ -200,7 +221,7 @@ const UsersPage = () => {
           }`}
         >
           <User className="w-4 h-4 inline mr-2" />
-          {t('stableHand')} ({users.filter((u) => u.role === 'STABLE_HAND').length})
+          {t('stableHand')} ({users.filter((u) => hasRole(u.role, 'STABLE_HAND')).length})
         </button>
       </div>
 
@@ -211,7 +232,7 @@ const UsersPage = () => {
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-primary-100 rounded-lg">
-                  {user.role === 'TRAINER' ? (
+                  {hasRole(user.role, 'TRAINER') ? (
                     <GraduationCap className="w-6 h-6 text-primary-600" />
                   ) : (
                     <User className="w-6 h-6 text-primary-600" />
@@ -222,9 +243,16 @@ const UsersPage = () => {
                   <p className="text-sm text-gray-500">{user.email}</p>
                 </div>
               </div>
-              {user.level && (
-                <span className={getLevelBadge(user.level)}>{getLevelLabel(user.level)}</span>
-              )}
+              <div className="flex flex-col gap-1 items-end">
+                {hasRole(user.role, 'ADMIN') && (
+                  <span className="badge bg-purple-100 text-purple-700">
+                    <Shield className="w-3 h-3 inline mr-1" />Admin
+                  </span>
+                )}
+                {user.level && (
+                  <span className={getLevelBadge(user.level)}>{getLevelLabel(user.level)}</span>
+                )}
+              </div>
             </div>
 
             {user.specialization && (
@@ -232,6 +260,15 @@ const UsersPage = () => {
                 <span className="font-medium">Specjalizacja:</span> {user.specialization}
               </p>
             )}
+
+            {/* Show all roles */}
+            <div className="flex flex-wrap gap-1 mb-4">
+              {user.role.split(',').map((role) => (
+                <span key={role} className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded">
+                  {role === 'ADMIN' ? 'Admin' : role === 'TRAINER' ? t('trainer') : role === 'RIDER' ? t('rider') : t('stableHand')}
+                </span>
+              ))}
+            </div>
 
             <div className="flex gap-2 pt-4 border-t border-gray-100">
               <button
@@ -324,20 +361,51 @@ const UsersPage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Role *</label>
-                <select
-                  value={formData.role}
-                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                  className="input"
-                >
-                  <option value="RIDER">{t('rider')}</option>
-                  <option value="TRAINER">{t('trainer')}</option>
-                  <option value="STABLE_HAND">{t('stableHand')}</option>
-                  {editingUser && <option value="ADMIN">Admin</option>}
-                </select>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Role * (można wybrać kilka)</label>
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.roles.includes('RIDER')}
+                      onChange={() => toggleRole('RIDER')}
+                      className="w-4 h-4 text-primary-600 rounded focus:ring-primary-500"
+                    />
+                    <span>{t('rider')}</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.roles.includes('TRAINER')}
+                      onChange={() => toggleRole('TRAINER')}
+                      className="w-4 h-4 text-primary-600 rounded focus:ring-primary-500"
+                    />
+                    <span>{t('trainer')}</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.roles.includes('STABLE_HAND')}
+                      onChange={() => toggleRole('STABLE_HAND')}
+                      className="w-4 h-4 text-primary-600 rounded focus:ring-primary-500"
+                    />
+                    <span>{t('stableHand')}</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.roles.includes('ADMIN')}
+                      onChange={() => toggleRole('ADMIN')}
+                      className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                    />
+                    <span className="flex items-center gap-1">
+                      <Shield className="w-4 h-4 text-purple-600" />
+                      Admin
+                    </span>
+                  </label>
+                </div>
               </div>
 
-              {(formData.role === 'RIDER') && (
+              {formData.roles.includes('RIDER') && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     {t('level')} *
@@ -354,7 +422,7 @@ const UsersPage = () => {
                 </div>
               )}
 
-              {(formData.role === 'TRAINER') && (
+              {formData.roles.includes('TRAINER') && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Specjalizacja

@@ -1,6 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../context/AuthContext';
+import { useAuth, hasRole } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import {
   LayoutDashboard,
@@ -35,35 +35,36 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   const getNavItems = () => {
-    switch (user?.role) {
-      case 'ADMIN':
-        return [
-          { to: '/dashboard', icon: LayoutDashboard, label: t('dashboard') },
-          { to: '/horses', icon: Horse, label: t('horses') },
-          { to: '/users', icon: Users, label: t('riders') + ' & ' + t('trainers') },
-          { to: '/schedule', icon: Calendar, label: t('schedule') },
-          { to: '/feeding', icon: Utensils, label: t('feeding') },
-        ];
-      case 'RIDER':
-        return [
-          { to: '/my-rides', icon: Calendar, label: t('mySchedule') },
-        ];
-      case 'TRAINER':
-        return [
-          { to: '/my-schedule', icon: Calendar, label: t('mySchedule') },
-        ];
-      case 'STABLE_HAND':
-        return [
-          { to: '/feeding', icon: Utensils, label: t('feedingList') },
-        ];
-      default:
-        return [];
+    const items: { to: string; icon: typeof LayoutDashboard; label: string }[] = [];
+    
+    // Admin gets full access
+    if (hasRole(user, 'ADMIN')) {
+      items.push(
+        { to: '/dashboard', icon: LayoutDashboard, label: t('dashboard') },
+        { to: '/horses', icon: Horse, label: t('horses') },
+        { to: '/users', icon: Users, label: t('riders') + ' & ' + t('trainers') },
+        { to: '/schedule', icon: Calendar, label: t('schedule') },
+        { to: '/feeding', icon: Utensils, label: t('feeding') }
+      );
+    } else {
+      // Non-admin roles get their specific menu items
+      if (hasRole(user, 'RIDER')) {
+        items.push({ to: '/my-rides', icon: Calendar, label: t('mySchedule') });
+      }
+      if (hasRole(user, 'TRAINER')) {
+        items.push({ to: '/my-schedule', icon: Calendar, label: t('mySchedule') });
+      }
+      if (hasRole(user, 'STABLE_HAND')) {
+        items.push({ to: '/feeding', icon: Utensils, label: t('feedingList') });
+      }
     }
+    
+    return items;
   };
 
   const navItems = getNavItems();
 
-  const getRoleName = (role: string) => {
+  const getSingleRoleName = (role: string) => {
     switch (role) {
       case 'ADMIN':
         return t('admin');
@@ -76,6 +77,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       default:
         return role;
     }
+  };
+
+  const getRoleNames = (roleString: string) => {
+    if (!roleString) return '';
+    return roleString.split(',').map(r => getSingleRoleName(r.trim())).join(', ');
   };
 
   return (
@@ -170,7 +176,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <div className="border-t border-white/20 pt-4 mt-4">
             <div className="px-4 py-2 mb-2">
               <p className="font-medium">{user?.name}</p>
-              <p className="text-sm text-white/60">{getRoleName(user?.role || '')}</p>
+              <p className="text-sm text-white/60">{getRoleNames(user?.role || '')}</p>
             </div>
             
             <button

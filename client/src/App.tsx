@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from './context/AuthContext';
+import { useAuth, hasRole } from './context/AuthContext';
 import Layout from './components/Layout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -33,27 +33,25 @@ function App() {
     );
   }
 
-  // Redirect based on role
+  // Redirect based on role (priority: ADMIN > TRAINER > RIDER > STABLE_HAND)
   const getDefaultRoute = () => {
-    switch (user?.role) {
-      case 'ADMIN':
-        return '/dashboard';
-      case 'RIDER':
-        return '/my-rides';
-      case 'TRAINER':
-        return '/my-schedule';
-      case 'STABLE_HAND':
-        return '/feeding';
-      default:
-        return '/dashboard';
-    }
+    if (hasRole(user, 'ADMIN')) return '/dashboard';
+    if (hasRole(user, 'TRAINER')) return '/my-schedule';
+    if (hasRole(user, 'RIDER')) return '/my-rides';
+    if (hasRole(user, 'STABLE_HAND')) return '/feeding';
+    return '/dashboard';
   };
+
+  const isAdmin = hasRole(user, 'ADMIN');
+  const isRider = hasRole(user, 'RIDER');
+  const isTrainer = hasRole(user, 'TRAINER');
+  const isStableHand = hasRole(user, 'STABLE_HAND');
 
   return (
     <Layout>
       <Routes>
         {/* Admin routes */}
-        {user?.role === 'ADMIN' && (
+        {isAdmin && (
           <>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/horses" element={<Horses />} />
@@ -64,19 +62,19 @@ function App() {
         )}
 
         {/* Rider routes */}
-        {user?.role === 'RIDER' && (
+        {isRider && !isAdmin && (
           <Route path="/my-rides" element={<RiderPortal />} />
         )}
 
         {/* Trainer routes */}
-        {user?.role === 'TRAINER' && (
+        {isTrainer && !isAdmin && (
           <>
             <Route path="/my-schedule" element={<TrainerSchedule />} />
           </>
         )}
 
         {/* Stable hand routes */}
-        {user?.role === 'STABLE_HAND' && (
+        {isStableHand && !isAdmin && (
           <Route path="/feeding" element={<Feeding />} />
         )}
 

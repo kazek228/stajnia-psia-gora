@@ -5,10 +5,16 @@ interface User {
   id: string;
   email: string;
   name: string;
-  role: 'ADMIN' | 'RIDER' | 'TRAINER' | 'STABLE_HAND';
+  role: string; // Can be comma-separated like "TRAINER,ADMIN"
   level?: string;
   specialization?: string;
 }
+
+// Helper to check if user has a specific role
+export const hasRole = (user: User | null, role: string): boolean => {
+  if (!user) return false;
+  return user.role.split(',').includes(role);
+};
 
 interface AuthContextType {
   user: User | null;
@@ -17,6 +23,7 @@ interface AuthContextType {
   logout: () => void;
   isLoading: boolean;
   isAuthenticated: boolean;
+  hasRole: (role: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -60,6 +67,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUser(null);
   };
 
+  const checkRole = (role: string): boolean => {
+    return hasRole(user, role);
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -69,6 +80,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         logout,
         isLoading,
         isAuthenticated: !!user,
+        hasRole: checkRole,
       }}
     >
       {children}
