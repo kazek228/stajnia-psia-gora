@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BarChart3, Calendar, TrendingUp } from 'lucide-react';
-import api from '../lib/api';
+import api from '../services/api';
 
 interface WorkStats {
   period: 'day' | 'month' | 'all';
@@ -55,12 +55,6 @@ export default function Statistics() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const getTitle = () => {
-    if (viewMode === 'day') return t('dailyStats');
-    if (viewMode === 'month') return t('monthlyStats');
-    return t('allTimeStats');
   };
 
   if (loading) {
