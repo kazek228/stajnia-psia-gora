@@ -12,6 +12,9 @@ interface WorkStats {
     totalMinutes: number;
     totalHours: number;
     sessions: number;
+    totalRevenue: number;
+    paidRevenue: number;
+    unpaidRevenue: number;
   }>;
   horses: Array<{
     id: string;
@@ -19,6 +22,9 @@ interface WorkStats {
     totalMinutes: number;
     totalHours: number;
     sessions: number;
+    totalRevenue: number;
+    paidRevenue: number;
+    unpaidRevenue: number;
   }>;
   totalSessions: number;
 }
@@ -177,10 +183,26 @@ export default function Statistics() {
                         {trainer.totalHours}h
                       </span>
                     </div>
-                    <div className="flex justify-between text-sm text-gray-600">
+                    <div className="flex justify-between text-sm text-gray-600 mb-1">
                       <span>{t('sessions')}: {trainer.sessions}</span>
                       <span>{trainer.totalMinutes} min</span>
                     </div>
+                    {trainer.totalRevenue > 0 && (
+                      <div className="text-sm space-y-1 mt-2 pt-2 border-t border-gray-100">
+                        <div className="flex justify-between text-gray-700">
+                          <span>{t('totalRevenue')}:</span>
+                          <span className="font-semibold">{trainer.totalRevenue.toFixed(2)} PLN</span>
+                        </div>
+                        <div className="flex justify-between text-green-600 text-xs">
+                          <span>{t('paidRevenue')}:</span>
+                          <span>{trainer.paidRevenue.toFixed(2)} PLN</span>
+                        </div>
+                        <div className="flex justify-between text-orange-600 text-xs">
+                          <span>{t('unpaidRevenue')}:</span>
+                          <span>{trainer.unpaidRevenue.toFixed(2)} PLN</span>
+                        </div>
+                      </div>
+                    )}
                     <div className="mt-2 bg-blue-100 rounded-full h-2 overflow-hidden">
                       <div
                         className="bg-blue-600 h-full transition-all duration-500"
@@ -220,10 +242,26 @@ export default function Statistics() {
                         {horse.totalHours}h
                       </span>
                     </div>
-                    <div className="flex justify-between text-sm text-gray-600">
+                    <div className="flex justify-between text-sm text-gray-600 mb-1">
                       <span>{t('sessions')}: {horse.sessions}</span>
                       <span>{horse.totalMinutes} min</span>
                     </div>
+                    {horse.totalRevenue > 0 && (
+                      <div className="text-sm space-y-1 mt-2 pt-2 border-t border-gray-100">
+                        <div className="flex justify-between text-gray-700">
+                          <span>{t('totalRevenue')}:</span>
+                          <span className="font-semibold">{horse.totalRevenue.toFixed(2)} PLN</span>
+                        </div>
+                        <div className="flex justify-between text-green-600 text-xs">
+                          <span>{t('paidRevenue')}:</span>
+                          <span>{horse.paidRevenue.toFixed(2)} PLN</span>
+                        </div>
+                        <div className="flex justify-between text-orange-600 text-xs">
+                          <span>{t('unpaidRevenue')}:</span>
+                          <span>{horse.unpaidRevenue.toFixed(2)} PLN</span>
+                        </div>
+                      </div>
+                    )}
                     <div className="mt-2 bg-amber-100 rounded-full h-2 overflow-hidden">
                       <div
                         className="bg-amber-600 h-full transition-all duration-500"

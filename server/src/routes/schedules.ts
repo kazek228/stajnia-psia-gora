@@ -200,7 +200,7 @@ router.get('/trainer-schedules', authenticateToken, async (req: AuthRequest, res
 // Create schedule (Admin only)
 router.post('/', authenticateToken, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
   try {
-    const { horseId, riderId, trainerId, date, startTime, duration, notes } = req.body;
+    const { horseId, riderId, trainerId, date, startTime, duration, notes, price, paid } = req.body;
 
     if (!horseId || !riderId || !trainerId || !date || !startTime || !duration) {
       return res.status(400).json({ error: 'Missing required fields' });
@@ -236,6 +236,8 @@ router.post('/', authenticateToken, requireRole('ADMIN'), async (req: AuthReques
         endTime,
         duration,
         notes,
+        price: price ? parseFloat(price) : null,
+        paid: paid === true || paid === 'true',
       },
       include: {
         horse: true,
@@ -271,7 +273,7 @@ router.post('/', authenticateToken, requireRole('ADMIN'), async (req: AuthReques
 // Update schedule (Admin only)
 router.put('/:id', authenticateToken, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
   try {
-    const { horseId, riderId, trainerId, date, startTime, duration, status, notes } = req.body;
+    const { horseId, riderId, trainerId, date, startTime, duration, status, notes, price, paid } = req.body;
 
     // Welfare check if changing horse, time, or duration
     if (horseId || startTime || duration) {
@@ -316,6 +318,8 @@ router.put('/:id', authenticateToken, requireRole('ADMIN'), async (req: AuthRequ
         ...(duration && { duration }),
         ...(status && { status }),
         ...(notes !== undefined && { notes }),
+        ...(price !== undefined && { price: price ? parseFloat(price) : null }),
+        ...(paid !== undefined && { paid: paid === true || paid === 'true' }),
       },
       include: {
         horse: true,

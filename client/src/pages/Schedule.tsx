@@ -30,6 +30,8 @@ interface ScheduleData {
   duration: number;
   status: string;
   notes: string | null;
+  price: number | null;
+  paid: boolean;
   horse: { id: string; name: string; level: string };
   rider: { id: string; name: string; level: string };
   trainer: { id: string; name: string };
@@ -68,6 +70,8 @@ const Schedule = () => {
     startTime: '09:00',
     duration: 60,
     notes: '',
+    price: '',
+    paid: false,
   });
 
   const locale = language === 'pl' ? pl : enUS;
@@ -105,6 +109,8 @@ const Schedule = () => {
       startTime: '09:00',
       duration: 60,
       notes: '',
+      price: '',
+      paid: false,
     });
     setIsModalOpen(true);
     setError('');
@@ -379,6 +385,23 @@ const Schedule = () => {
                             <GraduationCap className="w-4 h-4 text-forest-600" />
                             <span>{schedule.trainer.name}</span>
                           </div>
+
+                          {schedule.price && (
+                            <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-200">
+                              <span className="text-sm font-medium text-gray-700">
+                                {schedule.price.toFixed(2)} PLN
+                              </span>
+                              <span
+                                className={`text-xs px-2 py-1 rounded ${
+                                  schedule.paid
+                                    ? 'bg-green-100 text-green-700'
+                                    : 'bg-orange-100 text-orange-700'
+                                }`}
+                              >
+                                {schedule.paid ? t('paid') : t('unpaid')}
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </div>
 
@@ -538,6 +561,35 @@ const Schedule = () => {
                     <option value={90}>90 min</option>
                     <option value={120}>120 min</option>
                   </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('price')}</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={formData.price}
+                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                    className="input"
+                    placeholder="0.00"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('paid')}</label>
+                  <div className="flex items-center h-10">
+                    <input
+                      type="checkbox"
+                      checked={formData.paid}
+                      onChange={(e) => setFormData({ ...formData, paid: e.target.checked })}
+                      className="h-5 w-5 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                    />
+                    <span className="ml-2 text-sm text-gray-600">
+                      {formData.paid ? t('paid') : t('unpaid')}
+                    </span>
+                  </div>
                 </div>
               </div>
 

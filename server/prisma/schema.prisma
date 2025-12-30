@@ -56,6 +56,10 @@ model Schedule {
   endTime       String    // e.g., "10:00"
   duration      Int       // Duration in minutes
   
+  // Payment information
+  price         Float?    // Price for this ride session
+  paid          Boolean   @default(false) // Whether payment has been received
+  
   // Relations
   horseId       String
   horse         Horse     @relation(fields: [horseId], references: [id])

@@ -52,32 +52,70 @@ router.get('/work', authenticateToken, async (req, res) => {
     });
 
     // Calculate trainer statistics
-    const trainerStats = new Map<string, { name: string; totalMinutes: number; sessions: number }>();
+    const trainerStats = new Map<string, { 
+      name: string; 
+      totalMinutes: number; 
+      sessions: number;
+      totalRevenue: number;
+      paidRevenue: number;
+      unpaidRevenue: number;
+    }>();
     
     schedules.forEach(schedule => {
       if (schedule.trainer) {
         const existing = trainerStats.get(schedule.trainer.id) || { 
           name: schedule.trainer.name, 
           totalMinutes: 0, 
-          sessions: 0 
+          sessions: 0,
+          totalRevenue: 0,
+          paidRevenue: 0,
+          unpaidRevenue: 0,
         };
         existing.totalMinutes += schedule.duration;
         existing.sessions += 1;
+        
+        const price = schedule.price || 0;
+        existing.totalRevenue += price;
+        if (schedule.paid) {
+          existing.paidRevenue += price;
+        } else {
+          existing.unpaidRevenue += price;
+        }
+        
         trainerStats.set(schedule.trainer.id, existing);
       }
     });
 
     // Calculate horse statistics
-    const horseStats = new Map<string, { name: string; totalMinutes: number; sessions: number }>();
+    const horseStats = new Map<string, { 
+      name: string; 
+      totalMinutes: number; 
+      sessions: number;
+      totalRevenue: number;
+      paidRevenue: number;
+      unpaidRevenue: number;
+    }>();
     
     schedules.forEach(schedule => {
       const existing = horseStats.get(schedule.horse.id) || { 
         name: schedule.horse.name, 
         totalMinutes: 0, 
-        sessions: 0 
+        sessions: 0,
+        totalRevenue: 0,
+        paidRevenue: 0,
+        unpaidRevenue: 0,
       };
       existing.totalMinutes += schedule.duration;
       existing.sessions += 1;
+      
+      const price = schedule.price || 0;
+      existing.totalRevenue += price;
+      if (schedule.paid) {
+        existing.paidRevenue += price;
+      } else {
+        existing.unpaidRevenue += price;
+      }
+      
       horseStats.set(schedule.horse.id, existing);
     });
 
@@ -88,6 +126,9 @@ router.get('/work', authenticateToken, async (req, res) => {
       totalMinutes: data.totalMinutes,
       totalHours: parseFloat((data.totalMinutes / 60).toFixed(2)),
       sessions: data.sessions,
+      totalRevenue: parseFloat(data.totalRevenue.toFixed(2)),
+      paidRevenue: parseFloat(data.paidRevenue.toFixed(2)),
+      unpaidRevenue: parseFloat(data.unpaidRevenue.toFixed(2)),
     })).sort((a, b) => b.totalMinutes - a.totalMinutes);
 
     const horses = Array.from(horseStats.entries()).map(([id, data]) => ({
@@ -96,6 +137,9 @@ router.get('/work', authenticateToken, async (req, res) => {
       totalMinutes: data.totalMinutes,
       totalHours: parseFloat((data.totalMinutes / 60).toFixed(2)),
       sessions: data.sessions,
+      totalRevenue: parseFloat(data.totalRevenue.toFixed(2)),
+      paidRevenue: parseFloat(data.paidRevenue.toFixed(2)),
+      unpaidRevenue: parseFloat(data.unpaidRevenue.toFixed(2)),
     })).sort((a, b) => b.totalMinutes - a.totalMinutes);
 
     res.json({
