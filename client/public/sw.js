@@ -1,4 +1,4 @@
-const CACHE_NAME = 'stajnia-v1';
+const CACHE_NAME = 'stajnia-v2';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -7,10 +7,13 @@ const urlsToCache = [
 
 // Install event - cache resources
 self.addEventListener('install', (event) => {
+  console.log('[Service Worker] Installing...');
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('Opened cache');
-      return cache.addAll(urlsToCache);
+      console.log('[Service Worker] Caching initial resources');
+      return cache.addAll(urlsToCache).catch(err => {
+        console.error('[Service Worker] Cache addAll error:', err);
+      });
     })
   );
   self.skipWaiting();
@@ -33,7 +36,7 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch event - Network First strategy for better PWA experience
 self.addEventListener('fetch', (event) => {
   // Skip non-GET requests
   if (event.request.method !== 'GET') {
@@ -42,37 +45,45 @@ self.addEventListener('fetch', (event) => {
 
   // Skip API calls - always fetch fresh
   if (event.request.url.includes('/api/')) {
+    event.respondWith(fetch(event.request));
     return;
   }
 
+  // Network First strategy with cache fallback
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      // Cache hit - return response
-      if (response) {
-        return response;
-      }
-
-      // Clone the request
-      const fetchRequest = event.request.clone();
-
-      return fetch(fetchRequest).then((response) => {
+    fetch(event.request)
+      .then((response) => {
         // Check if valid response
-        if (!response || response.status !== 200 || response.type !== 'basic') {
+        if (!response || response.status !== 200) {
           return response;
         }
 
-        // Clone the response
+        // Clone and cache the response
         const responseToCache = response.clone();
-
+        
         caches.open(CACHE_NAME).then((cache) => {
           cache.put(event.request, responseToCache);
         });
 
         return response;
-      }).catch(() => {
-        // Offline fallback
-        return caches.match('/index.html');
-      });
-    })
+      })
+      .catch(() => {
+        // Network failed - try cache
+        return caches.match(event.request).then((cachedResponse) => {
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          
+          // If no cache, return index.html for navigation requests
+          if (event.request.mode === 'navigate') {
+            return caches.match('/index.html');
+          }
+          
+          return new Response('Offline - resource not available', {
+            status: 503,
+            statusText: 'Service Unavailable'
+          });
+        });
+      })
   );
 });
