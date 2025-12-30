@@ -62,6 +62,26 @@ async function checkHorseWelfare(
     );
   }
 
+  // Check for time overlap - horse cannot be in two places at once
+  const newStartTime = startTime;
+  const newEndTime = calculateEndTime(startTime, duration);
+  
+  for (const existing of existingSchedules) {
+    const existingEndTime = existing.endTime;
+    
+    // Check if times overlap
+    const newStartsBeforeExistingEnds = newStartTime < existingEndTime;
+    const newEndsAfterExistingStarts = newEndTime > existing.startTime;
+    
+    if (newStartsBeforeExistingEnds && newEndsAfterExistingStarts) {
+      result.valid = false;
+      result.errors.push(
+        `Horse already has a scheduled ride at this time. Existing: ${existing.startTime}-${existingEndTime}, New: ${newStartTime}-${newEndTime}`
+      );
+      break;
+    }
+  }
+
   // Check for required breaks (1h rest after 2h continuous work)
   const allSchedules = [
     ...existingSchedules,
