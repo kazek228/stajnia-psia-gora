@@ -58,6 +58,7 @@ const resources = {
       editHorse: 'Edytuj konia',
       horseDetails: 'Szczegóły konia',
       workload: 'Obciążenie',
+      horseWorkload: 'Obciążenie koni',
       
       // Levels
       beginner: 'Początkujący',
@@ -193,6 +194,7 @@ const resources = {
       editHorse: 'Edit horse',
       horseDetails: 'Horse details',
       workload: 'Workload',
+      horseWorkload: 'Horse Workload',
       
       // Levels
       beginner: 'Beginner',

@@ -410,4 +410,50 @@ router.post('/validate', authenticateToken, async (req, res) => {
   }
 });
 
+// Get horse workload for a specific date
+router.get('/workload/:date', authenticateToken, async (req, res) => {
+  try {
+    const targetDate = new Date(req.params.date);
+    const startOfDay = new Date(targetDate);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(targetDate);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const horses = await prisma.horse.findMany({
+      where: { isActive: true },
+      include: {
+        schedules: {
+          where: {
+            date: { gte: startOfDay, lte: endOfDay },
+            status: 'SCHEDULED',
+          },
+        },
+      },
+    });
+
+    const workloads = horses.map((horse) => {
+      const totalMinutes = horse.schedules.reduce((sum, s) => sum + s.duration, 0);
+      const maxMinutes = horse.maxWorkHours * 60;
+      const workloadPercent = maxMinutes > 0 ? (totalMinutes / maxMinutes) * 100 : 0;
+
+      return {
+        id: horse.id,
+        name: horse.name,
+        totalMinutes,
+        maxMinutes,
+        workloadPercent: Math.round(workloadPercent),
+        status: workloadPercent >= 100 ? 'red' : workloadPercent >= 75 ? 'yellow' : 'green',
+        schedulesCount: horse.schedules.length,
+      };
+    });
+
+    // Sort by workload percent descending
+    workloads.sort((a, b) => b.workloadPercent - a.workloadPercent);
+
+    res.json(workloads);
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 export default router;

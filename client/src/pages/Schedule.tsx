@@ -51,6 +51,16 @@ interface UserData {
   specialization?: string;
 }
 
+interface HorseWorkload {
+  id: string;
+  name: string;
+  totalMinutes: number;
+  maxMinutes: number;
+  workloadPercent: number;
+  status: 'green' | 'yellow' | 'red';
+  schedulesCount: number;
+}
+
 const Schedule = () => {
   const { t } = useTranslation();
   const { language } = useLanguage();
@@ -58,6 +68,7 @@ const Schedule = () => {
   const [horses, setHorses] = useState<HorseData[]>([]);
   const [riders, setRiders] = useState<UserData[]>([]);
   const [trainers, setTrainers] = useState<UserData[]>([]);
+  const [horseWorkloads, setHorseWorkloads] = useState<HorseWorkload[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -85,17 +96,19 @@ const Schedule = () => {
   const fetchData = async () => {
     try {
       const dateStr = format(selectedDate, 'yyyy-MM-dd');
-      const [schedulesRes, horsesRes, ridersRes, trainersRes] = await Promise.all([
+      const [schedulesRes, horsesRes, ridersRes, trainersRes, workloadRes] = await Promise.all([
         api.get(`/schedules/date/${dateStr}`),
         api.get('/horses'),
         api.get('/users/riders'),
         api.get('/users/trainers'),
+        api.get(`/schedules/workload/${dateStr}`),
       ]);
 
       setSchedules(schedulesRes.data);
       setHorses(horsesRes.data);
       setRiders(ridersRes.data);
       setTrainers(trainersRes.data);
+      setHorseWorkloads(workloadRes.data);
     } catch (error) {
       console.error('Failed to fetch data:', error);
     } finally {
@@ -352,6 +365,61 @@ const Schedule = () => {
           })}
         </div>
       </div>
+
+      {/* Horse Workload for selected date */}
+      {horseWorkloads.length > 0 && (
+        <div className="card">
+          <h2 className="text-lg font-semibold text-primary-800 mb-4 flex items-center gap-2">
+            <Horse className="w-5 h-5" />
+            {t('horseWorkload')} - {format(selectedDate, 'd MMMM', { locale })}
+          </h2>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {horseWorkloads.filter(w => w.schedulesCount > 0).map((workload) => (
+              <div
+                key={workload.id}
+                className={`p-4 rounded-xl border-2 ${
+                  workload.status === 'green'
+                    ? 'bg-green-50 border-green-200'
+                    : workload.status === 'yellow'
+                    ? 'bg-yellow-50 border-yellow-200'
+                    : 'bg-red-50 border-red-200'
+                }`}
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <h3 className="font-semibold text-gray-800">{workload.name}</h3>
+                  <span
+                    className={`text-xs px-2 py-1 rounded-full font-medium ${
+                      workload.status === 'green'
+                        ? 'bg-green-100 text-green-700'
+                        : workload.status === 'yellow'
+                        ? 'bg-yellow-100 text-yellow-700'
+                        : 'bg-red-100 text-red-700'
+                    }`}
+                  >
+                    {workload.workloadPercent}%
+                  </span>
+                </div>
+                <div className="text-sm text-gray-600">
+                  <p>{workload.totalMinutes} min / {workload.maxMinutes} min</p>
+                  <p className="text-xs mt-1">{workload.schedulesCount} {workload.schedulesCount === 1 ? 'jazda' : 'jazd'}</p>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                  <div
+                    className={`h-2 rounded-full ${
+                      workload.status === 'green'
+                        ? 'bg-green-500'
+                        : workload.status === 'yellow'
+                        ? 'bg-yellow-500'
+                        : 'bg-red-500'
+                    }`}
+                    style={{ width: `${Math.min(workload.workloadPercent, 100)}%` }}
+                  ></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Schedule list */}
       <div className="card">
