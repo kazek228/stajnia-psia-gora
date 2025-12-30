@@ -11,6 +11,8 @@ interface UserData {
   role: string;
   level?: string;
   specialization?: string;
+  paymentMethod?: string;
+  subscriptionHours?: number;
 }
 
 // Helper to check if user has a specific role
@@ -44,6 +46,8 @@ const UsersPage = () => {
     roles: [] as string[],
     level: 'BEGINNER',
     specialization: '',
+    paymentMethod: 'CASH',
+    subscriptionHours: 0,
   });
 
   useEffect(() => {
@@ -71,6 +75,8 @@ const UsersPage = () => {
         roles: user.role.split(','),
         level: user.level || 'BEGINNER',
         specialization: user.specialization || '',
+        paymentMethod: user.paymentMethod || 'CASH',
+        subscriptionHours: user.subscriptionHours || 0,
       });
     } else {
       setEditingUser(null);
@@ -81,6 +87,8 @@ const UsersPage = () => {
         roles: [activeTab],
         level: 'BEGINNER',
         specialization: '',
+        paymentMethod: 'CASH',
+        subscriptionHours: 0,
       });
     }
     setIsModalOpen(true);
@@ -134,6 +142,10 @@ const UsersPage = () => {
         }
         if (formData.roles.includes('RIDER')) {
           updateData.level = formData.level;
+          updateData.paymentMethod = formData.paymentMethod;
+          updateData.subscriptionHours = formData.paymentMethod === 'SUBSCRIPTION' 
+            ? formData.subscriptionHours 
+            : null;
         }
         if (formData.roles.includes('TRAINER')) {
           updateData.specialization = formData.specialization;
@@ -144,7 +156,9 @@ const UsersPage = () => {
           ...formData, 
           email: emailToUse,
           password: passwordToUse,
-          role: roleString 
+          role: roleString,
+          paymentMethod: formData.roles.includes('RIDER') ? formData.paymentMethod : null,
+          subscriptionHours: formData.paymentMethod === 'SUBSCRIPTION' ? formData.subscriptionHours : null,
         });
       }
       fetchUsers();
@@ -284,9 +298,26 @@ const UsersPage = () => {
             </div>
 
             {user.specialization && (
-              <p className="text-sm text-gray-600 mb-4">
+              <p className="text-sm text-gray-600 mb-2">
                 <span className="font-medium">Specjalizacja:</span> {user.specialization}
               </p>
+            )}
+
+            {/* Payment info for riders */}
+            {hasRole(user.role, 'RIDER') && user.paymentMethod && (
+              <div className="text-sm text-gray-600 mb-2">
+                <span className="font-medium">Płatność:</span>{' '}
+                {user.paymentMethod === 'CASH' && 'Gotówka'}
+                {user.paymentMethod === 'BLIK' && 'BLIK'}
+                {user.paymentMethod === 'SUBSCRIPTION' && (
+                  <span className="inline-flex items-center gap-1">
+                    Karnet 
+                    <span className={`font-bold ${(user.subscriptionHours || 0) <= 1 ? 'text-red-600' : 'text-green-600'}`}>
+                      ({user.subscriptionHours || 0}h)
+                    </span>
+                  </span>
+                )}
+              </div>
             )}
 
             {/* Show all roles */}
@@ -459,6 +490,42 @@ const UsersPage = () => {
                     <option value="INTERMEDIATE">{t('intermediate')}</option>
                     <option value="ADVANCED">{t('advanced')}</option>
                   </select>
+                </div>
+              )}
+
+              {formData.roles.includes('RIDER') && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Płatność
+                  </label>
+                  <select
+                    value={formData.paymentMethod}
+                    onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}
+                    className="input"
+                  >
+                    <option value="CASH">Gotówka</option>
+                    <option value="BLIK">BLIK</option>
+                    <option value="SUBSCRIPTION">Karnet</option>
+                  </select>
+                </div>
+              )}
+
+              {formData.roles.includes('RIDER') && formData.paymentMethod === 'SUBSCRIPTION' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Godziny z karnetu
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.subscriptionHours}
+                    onChange={(e) => setFormData({ ...formData, subscriptionHours: parseFloat(e.target.value) || 0 })}
+                    className="input"
+                    min="0"
+                    step="0.5"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Pozostałe godziny do wykorzystania. Odejmowane automatycznie po jazdie.
+                  </p>
                 </div>
               )}
 

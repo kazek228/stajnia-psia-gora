@@ -60,11 +60,11 @@ router.post('/login', async (req, res) => {
 // Register (Admin only can create users)
 router.post('/register', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
-    if (req.user?.role !== 'ADMIN') {
+    if (req.user?.role !== 'ADMIN' && !req.user?.role.includes('ADMIN')) {
       return res.status(403).json({ error: 'Only admins can create users' });
     }
 
-    const { email, password, name, role, level, specialization } = req.body;
+    const { email, password, name, role, level, specialization, paymentMethod, subscriptionHours } = req.body;
 
     if (!email || !password || !name || !role) {
       return res.status(400).json({ error: 'Missing required fields' });
@@ -88,6 +88,8 @@ router.post('/register', authenticateToken, async (req: AuthRequest, res: Respon
         role,
         level,
         specialization,
+        paymentMethod,
+        subscriptionHours: subscriptionHours || null,
       },
     });
 

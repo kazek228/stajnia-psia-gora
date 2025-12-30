@@ -17,6 +17,11 @@ model User {
   role          String    // ADMIN, RIDER, TRAINER, STABLE_HAND
   level         String?   // For riders: BEGINNER, INTERMEDIATE, ADVANCED
   specialization String? // For trainers
+  
+  // Payment info for riders
+  paymentMethod   String?   // BLIK, CASH, SUBSCRIPTION
+  subscriptionHours Float?  @default(0) // Remaining hours in subscription
+  
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 

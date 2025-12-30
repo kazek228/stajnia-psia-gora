@@ -15,6 +15,7 @@ import {
   User,
   GraduationCap,
   Trash2,
+  CheckCircle,
 } from 'lucide-react';
 
 const Horse = PawPrint;
@@ -189,6 +190,20 @@ const Schedule = () => {
       fetchData();
     } catch (error) {
       console.error('Failed to delete schedule:', error);
+    }
+  };
+
+  const handleComplete = async (id: string) => {
+    if (!confirm('Zakończyć jazdę? Godziny zostaną odjęte z karnetu jeśli dotyczy.')) return;
+
+    try {
+      const response = await api.post(`/schedules/${id}/complete`);
+      fetchData();
+      if (response.data.remainingHours !== undefined) {
+        alert(`Jazda zakończona. Pozostało ${response.data.remainingHours}h na karnecie.`);
+      }
+    } catch (error) {
+      console.error('Failed to complete schedule:', error);
     }
   };
 
@@ -373,6 +388,20 @@ const Schedule = () => {
                             <AlertTriangle className="w-4 h-4" />
                             <span className="text-xs">{t('levelMismatch')}</span>
                           </div>
+                        )}
+                        {schedule.status !== 'COMPLETED' && (
+                          <button
+                            onClick={() => handleComplete(schedule.id)}
+                            className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                            title="Zakończ jazdę"
+                          >
+                            <CheckCircle className="w-4 h-4" />
+                          </button>
+                        )}
+                        {schedule.status === 'COMPLETED' && (
+                          <span className="text-xs text-green-600 font-medium px-2 py-1 bg-green-50 rounded">
+                            ✓ Zakończono
+                          </span>
                         )}
                         <button
                           onClick={() => handleDelete(schedule.id)}

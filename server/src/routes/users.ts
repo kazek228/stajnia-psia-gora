@@ -17,6 +17,8 @@ router.get('/', authenticateToken, requireRole('ADMIN'), async (_, res) => {
         role: true,
         level: true,
         specialization: true,
+        paymentMethod: true,
+        subscriptionHours: true,
         createdAt: true,
       },
       orderBy: { name: 'asc' },
@@ -87,7 +89,7 @@ router.get('/trainers', authenticateToken, async (_, res) => {
 // Update user (Admin only)
 router.put('/:id', authenticateToken, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
   try {
-    const { name, email, role, level, specialization, password } = req.body;
+    const { name, email, role, level, specialization, password, paymentMethod, subscriptionHours } = req.body;
 
     const updateData: any = {
       name,
@@ -95,6 +97,8 @@ router.put('/:id', authenticateToken, requireRole('ADMIN'), async (req: AuthRequ
       role,
       level,
       specialization,
+      paymentMethod,
+      subscriptionHours: subscriptionHours !== undefined ? subscriptionHours : null,
     };
 
     if (password) {
@@ -111,6 +115,8 @@ router.put('/:id', authenticateToken, requireRole('ADMIN'), async (req: AuthRequ
         role: true,
         level: true,
         specialization: true,
+        paymentMethod: true,
+        subscriptionHours: true,
       },
     });
 

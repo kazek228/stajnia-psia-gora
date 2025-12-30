@@ -348,6 +348,51 @@ router.delete('/:id', authenticateToken, requireRole('ADMIN'), async (req: AuthR
   }
 });
 
+// Mark schedule as completed and deduct subscription hours
+router.post('/:id/complete', authenticateToken, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
+  try {
+    const schedule = await prisma.schedule.findUnique({
+      where: { id: req.params.id },
+      include: {
+        rider: true,
+      },
+    });
+
+    if (!schedule) {
+      return res.status(404).json({ error: 'Schedule not found' });
+    }
+
+    // Update schedule status to COMPLETED
+    await prisma.schedule.update({
+      where: { id: req.params.id },
+      data: { status: 'COMPLETED' },
+    });
+
+    // If rider has subscription, deduct hours
+    if (schedule.rider && schedule.rider.paymentMethod === 'SUBSCRIPTION') {
+      const hoursToDeduct = schedule.duration / 60; // Convert minutes to hours
+      const currentHours = schedule.rider.subscriptionHours || 0;
+      const newHours = Math.max(0, currentHours - hoursToDeduct);
+
+      await prisma.user.update({
+        where: { id: schedule.riderId },
+        data: { subscriptionHours: newHours },
+      });
+
+      return res.json({ 
+        message: 'Schedule completed and subscription hours deducted',
+        deductedHours: hoursToDeduct,
+        remainingHours: newHours,
+      });
+    }
+
+    res.json({ message: 'Schedule completed' });
+  } catch (error) {
+    console.error('Complete schedule error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Validate schedule (check welfare before creating)
 router.post('/validate', authenticateToken, async (req, res) => {
   try {
