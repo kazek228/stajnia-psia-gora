@@ -246,7 +246,7 @@ app.post('/api/restore', async (req, res) => {
     for (const user of data.users) {
       const { id: oldId, ...userData } = user;
       const newUser = await prisma.user.create({ data: userData });
-      userIdMap.set(oldId, newUser.id);
+      userIdMap.set(Number(oldId), newUser.id);
     }
 
     // Restore horses
@@ -254,7 +254,7 @@ app.post('/api/restore', async (req, res) => {
     for (const horse of data.horses) {
       const { id: oldId, ...horseData } = horse;
       const newHorse = await prisma.horse.create({ data: horseData });
-      horseIdMap.set(oldId, newHorse.id);
+      horseIdMap.set(Number(oldId), newHorse.id);
     }
 
     // Restore schedules with mapped IDs
@@ -263,10 +263,10 @@ app.post('/api/restore', async (req, res) => {
       for (const schedule of data.schedules) {
         const { id, horseId, riderId, trainerId, completedById, ...scheduleData } = schedule;
         
-        const newHorseId = horseIdMap.get(horseId);
-        const newRiderId = riderId ? userIdMap.get(riderId) : null;
-        const newTrainerId = trainerId ? userIdMap.get(trainerId) : null;
-        const newCompletedById = completedById ? userIdMap.get(completedById) : null;
+        const newHorseId = horseIdMap.get(Number(horseId));
+        const newRiderId = riderId ? userIdMap.get(Number(riderId)) : null;
+        const newTrainerId = trainerId ? userIdMap.get(Number(trainerId)) : null;
+        const newCompletedById = completedById ? userIdMap.get(Number(completedById)) : null;
 
         if (newHorseId) {
           await prisma.schedule.create({
