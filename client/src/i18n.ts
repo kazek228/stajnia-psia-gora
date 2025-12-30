@@ -46,6 +46,7 @@ const resources = {
       
       // Horses
       horseName: 'Imię konia',
+      riderName: 'Imię jeźdźca',
       breed: 'Rasa',
       level: 'Poziom',
       maxWorkHours: 'Maks. godzin pracy',
@@ -159,6 +160,7 @@ const resources = {
       
       // Horses
       horseName: 'Horse name',
+      riderName: 'Rider name',
       breed: 'Breed',
       level: 'Level',
       maxWorkHours: 'Max work hours',
