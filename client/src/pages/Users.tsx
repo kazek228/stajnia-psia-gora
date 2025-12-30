@@ -285,14 +285,14 @@ const UsersPage = () => {
                   )}
                 </div>
               </div>
-              <div className="flex flex-col gap-1 items-end">
+              <div className="flex flex-col gap-1 items-end shrink-0">
                 {hasRole(user.role, 'ADMIN') && (
-                  <span className="badge bg-purple-100 text-purple-700">
+                  <span className="badge bg-purple-100 text-purple-700 whitespace-nowrap">
                     <Shield className="w-3 h-3 inline mr-1" />Admin
                   </span>
                 )}
                 {user.level && (
-                  <span className={getLevelBadge(user.level)}>{getLevelLabel(user.level)}</span>
+                  <span className={getLevelBadge(user.level) + ' whitespace-nowrap'}>{getLevelLabel(user.level)}</span>
                 )}
               </div>
             </div>

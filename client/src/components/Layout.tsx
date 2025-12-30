@@ -231,7 +231,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
         {/* Main content */}
         <main className="flex-1 p-4 lg:p-8 min-h-screen">
-          {children}
+          <div className="lg:max-w-7xl lg:mx-auto">{children}</div>
         </main>
       </div>
     </div>
