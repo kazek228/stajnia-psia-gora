@@ -16,6 +16,7 @@ import {
   GraduationCap,
   Trash2,
   CheckCircle,
+  Pencil,
 } from 'lucide-react';
 
 const Horse = PawPrint;
@@ -60,6 +61,7 @@ const Schedule = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingSchedule, setEditingSchedule] = useState<ScheduleData | null>(null);
   const [error, setError] = useState('');
   const [warning, setWarning] = useState('');
 
@@ -102,6 +104,7 @@ const Schedule = () => {
   };
 
   const openModal = () => {
+    setEditingSchedule(null);
     setFormData({
       horseId: horses[0]?.id || '',
       riderId: riders[0]?.id || '',
@@ -117,8 +120,26 @@ const Schedule = () => {
     setWarning('');
   };
 
+  const openEditModal = (schedule: ScheduleData) => {
+    setEditingSchedule(schedule);
+    setFormData({
+      horseId: schedule.horse.id,
+      riderId: schedule.rider.id,
+      trainerId: schedule.trainer.id,
+      startTime: schedule.startTime,
+      duration: schedule.duration,
+      notes: schedule.notes || '',
+      price: schedule.price?.toString() || '',
+      paid: schedule.paid,
+    });
+    setIsModalOpen(true);
+    setError('');
+    setWarning('');
+  };
+
   const closeModal = () => {
     setIsModalOpen(false);
+    setEditingSchedule(null);
     setError('');
     setWarning('');
   };
@@ -174,10 +195,19 @@ const Schedule = () => {
     if (!isValid) return;
 
     try {
-      await api.post('/schedules', {
-        ...formData,
-        date: format(selectedDate, 'yyyy-MM-dd'),
-      });
+      if (editingSchedule) {
+        // Update existing schedule
+        await api.put(`/schedules/${editingSchedule.id}`, {
+          ...formData,
+          date: format(selectedDate, 'yyyy-MM-dd'),
+        });
+      } else {
+        // Create new schedule
+        await api.post('/schedules', {
+          ...formData,
+          date: format(selectedDate, 'yyyy-MM-dd'),
+        });
+      }
       fetchData();
       closeModal();
     } catch (err: any) {
@@ -427,8 +457,16 @@ const Schedule = () => {
                           </span>
                         )}
                         <button
+                          onClick={() => openEditModal(schedule)}
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          title={t('edit')}
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
                           onClick={() => handleDelete(schedule.id)}
                           className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title={t('delete')}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -452,7 +490,9 @@ const Schedule = () => {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto animate-fade-in">
             <div className="flex items-center justify-between p-6 border-b border-gray-100">
-              <h2 className="text-xl font-semibold text-primary-800">{t('addSession')}</h2>
+              <h2 className="text-xl font-semibold text-primary-800">
+                {editingSchedule ? t('editSession') : t('addSession')}
+              </h2>
               <button
                 onClick={closeModal}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
