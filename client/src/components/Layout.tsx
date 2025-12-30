@@ -87,7 +87,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className="min-h-screen bg-nature-gradient">
       {/* Mobile header */}
-      <header className="lg:hidden bg-forest-gradient text-white p-4 flex items-center justify-between sticky top-0 z-50 shadow-lg h-16">
+      <header className="lg:hidden bg-forest-gradient text-white p-4 flex items-center justify-between sticky top-0 z-50 shadow-lg h-16 w-full">
         <div className="flex items-center gap-3">
           <Horse className="w-8 h-8" />
           <span className="font-display font-semibold text-sm">{t('appNameShort')}</span>
