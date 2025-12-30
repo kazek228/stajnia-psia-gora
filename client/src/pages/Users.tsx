@@ -111,16 +111,25 @@ const UsersPage = () => {
       return;
     }
 
+    // Jeśli tylko RIDER - generuj losowy email i hasło (nie będą używane do logowania)
+    const isOnlyRider = formData.roles.length === 1 && formData.roles[0] === 'RIDER';
+    const emailToUse = isOnlyRider && !formData.email 
+      ? `rider_${Date.now()}@nologin.local` 
+      : formData.email;
+    const passwordToUse = isOnlyRider && !formData.password 
+      ? Math.random().toString(36).slice(-12) 
+      : formData.password;
+
     try {
       const roleString = formData.roles.join(',');
       
       if (editingUser) {
         const updateData: any = {
           name: formData.name,
-          email: formData.email,
+          email: isOnlyRider ? editingUser.email : formData.email, // Nie zmieniaj email dla RIDER
           role: roleString,
         };
-        if (formData.password) {
+        if (formData.password && !isOnlyRider) {
           updateData.password = formData.password;
         }
         if (formData.roles.includes('RIDER')) {
@@ -131,7 +140,12 @@ const UsersPage = () => {
         }
         await api.put(`/users/${editingUser.id}`, updateData);
       } else {
-        await api.post('/auth/register', { ...formData, role: roleString });
+        await api.post('/auth/register', { 
+          ...formData, 
+          email: emailToUse,
+          password: passwordToUse,
+          role: roleString 
+        });
       }
       fetchUsers();
       closeModal();
@@ -251,7 +265,10 @@ const UsersPage = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold text-primary-800">{user.name}</h3>
-                  <p className="text-sm text-gray-500">{user.email}</p>
+                  {/* Pokaż email tylko jeśli użytkownik może się logować (nie tylko RIDER) */}
+                  {user.role !== 'RIDER' && !user.email?.includes('@nologin.local') && (
+                    <p className="text-sm text-gray-500">{user.email}</p>
+                  )}
                 </div>
               </div>
               <div className="flex flex-col gap-1 items-end">
@@ -344,32 +361,44 @@ const UsersPage = () => {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('email')} *
-                </label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="input"
-                  required
-                />
-              </div>
+              {/* Email i hasło tylko dla ról innych niż RIDER lub gdy jest więcej ról */}
+              {(formData.roles.length === 0 || formData.roles.some(r => r !== 'RIDER')) && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {t('email')} *
+                    </label>
+                    <input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="input"
+                      required
+                    />
+                  </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('password')} {editingUser ? '' : '*'}
-                </label>
-                <input
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="input"
-                  required={!editingUser}
-                  placeholder={editingUser ? 'Leave empty to keep current' : ''}
-                />
-              </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {t('password')} {editingUser ? '' : '*'}
+                    </label>
+                    <input
+                      type="password"
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      className="input"
+                      required={!editingUser}
+                      placeholder={editingUser ? 'Leave empty to keep current' : ''}
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* Info dla samych jeźdźców */}
+              {formData.roles.length === 1 && formData.roles[0] === 'RIDER' && (
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-700 text-sm">
+                  Jeźdźcy nie mają możliwości logowania - są tylko przypisywani do sesji treningowych.
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Role * (można wybrać kilka)</label>

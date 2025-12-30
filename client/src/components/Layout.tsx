@@ -48,9 +48,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       );
     } else {
       // Non-admin roles get their specific menu items
-      if (hasRole(user, 'RIDER')) {
-        items.push({ to: '/my-rides', icon: Calendar, label: t('mySchedule') });
-      }
+      // Note: RIDER alone cannot log in, so no menu needed for them
       if (hasRole(user, 'TRAINER')) {
         items.push({ to: '/my-schedule', icon: Calendar, label: t('mySchedule') });
       }

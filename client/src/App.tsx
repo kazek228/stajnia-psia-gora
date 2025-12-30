@@ -7,7 +7,6 @@ import Horses from './pages/Horses';
 import Users from './pages/Users';
 import Schedule from './pages/Schedule';
 import Feeding from './pages/Feeding';
-import RiderPortal from './pages/RiderPortal';
 import TrainerSchedule from './pages/TrainerSchedule';
 
 function App() {
@@ -37,13 +36,11 @@ function App() {
   const getDefaultRoute = () => {
     if (hasRole(user, 'ADMIN')) return '/dashboard';
     if (hasRole(user, 'TRAINER')) return '/my-schedule';
-    if (hasRole(user, 'RIDER')) return '/my-rides';
     if (hasRole(user, 'STABLE_HAND')) return '/feeding';
     return '/dashboard';
   };
 
   const isAdmin = hasRole(user, 'ADMIN');
-  const isRider = hasRole(user, 'RIDER');
   const isTrainer = hasRole(user, 'TRAINER');
   const isStableHand = hasRole(user, 'STABLE_HAND');
 
@@ -59,11 +56,6 @@ function App() {
             <Route path="/schedule" element={<Schedule />} />
             <Route path="/feeding" element={<Feeding />} />
           </>
-        )}
-
-        {/* Rider routes */}
-        {isRider && !isAdmin && (
-          <Route path="/my-rides" element={<RiderPortal />} />
         )}
 
         {/* Trainer routes */}

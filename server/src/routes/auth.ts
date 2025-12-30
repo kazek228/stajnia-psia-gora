@@ -24,6 +24,11 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    // Block login for users who are ONLY riders (no other roles)
+    if (user.role === 'RIDER') {
+      return res.status(403).json({ error: 'Riders cannot log in to the system' });
+    }
+
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
       return res.status(401).json({ error: 'Invalid credentials' });
