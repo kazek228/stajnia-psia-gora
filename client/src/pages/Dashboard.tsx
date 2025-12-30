@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { PawPrint, Users, GraduationCap, Calendar, TrendingUp } from 'lucide-react';
 
 const Horse = PawPrint;
@@ -24,6 +25,7 @@ interface HorseWorkload {
 
 const Dashboard = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [horseWorkloads, setHorseWorkloads] = useState<HorseWorkload[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -89,7 +91,10 @@ const Dashboard = () => {
 
       {/* Stats cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="card card-hover">
+        <button 
+          onClick={() => navigate('/horses')}
+          className="card card-hover text-left cursor-pointer transition-transform hover:scale-105"
+        >
           <div className="flex items-center gap-4">
             <div className="p-3 bg-primary-100 rounded-xl">
               <Horse className="w-6 h-6 text-primary-600" />
@@ -99,9 +104,12 @@ const Dashboard = () => {
               <p className="text-sm text-gray-600">{t('totalHorses')}</p>
             </div>
           </div>
-        </div>
+        </button>
 
-        <div className="card card-hover">
+        <button 
+          onClick={() => navigate('/users?tab=riders')}
+          className="card card-hover text-left cursor-pointer transition-transform hover:scale-105"
+        >
           <div className="flex items-center gap-4">
             <div className="p-3 bg-earth-100 rounded-xl">
               <Users className="w-6 h-6 text-earth-600" />
@@ -111,9 +119,12 @@ const Dashboard = () => {
               <p className="text-sm text-gray-600">{t('totalRiders')}</p>
             </div>
           </div>
-        </div>
+        </button>
 
-        <div className="card card-hover">
+        <button 
+          onClick={() => navigate('/users?tab=trainers')}
+          className="card card-hover text-left cursor-pointer transition-transform hover:scale-105"
+        >
           <div className="flex items-center gap-4">
             <div className="p-3 bg-forest-100 rounded-xl">
               <GraduationCap className="w-6 h-6 text-forest-600" />
@@ -123,9 +134,12 @@ const Dashboard = () => {
               <p className="text-sm text-gray-600">{t('totalTrainers')}</p>
             </div>
           </div>
-        </div>
+        </button>
 
-        <div className="card card-hover">
+        <button 
+          onClick={() => navigate('/schedule')}
+          className="card card-hover text-left cursor-pointer transition-transform hover:scale-105"
+        >
           <div className="flex items-center gap-4">
             <div className="p-3 bg-blue-100 rounded-xl">
               <Calendar className="w-6 h-6 text-blue-600" />
@@ -135,7 +149,7 @@ const Dashboard = () => {
               <p className="text-sm text-gray-600">{t('todaySchedules')}</p>
             </div>
           </div>
-        </div>
+        </button>
       </div>
 
       {/* Horse workloads */}

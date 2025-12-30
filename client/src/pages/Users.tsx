@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import { Users, Plus, Pencil, Trash2, X, AlertCircle, GraduationCap, User, Shield } from 'lucide-react';
 import api from '../services/api';
 
@@ -19,12 +20,22 @@ const hasRole = (userRole: string, role: string) => {
 
 const UsersPage = () => {
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
   const [users, setUsers] = useState<UserData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserData | null>(null);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState<'RIDER' | 'TRAINER' | 'STABLE_HAND'>('RIDER');
+  
+  // Get initial tab from URL or default to RIDER
+  const getInitialTab = (): 'RIDER' | 'TRAINER' | 'STABLE_HAND' => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'trainers') return 'TRAINER';
+    if (tabParam === 'stable_hands') return 'STABLE_HAND';
+    return 'RIDER';
+  };
+  
+  const [activeTab, setActiveTab] = useState<'RIDER' | 'TRAINER' | 'STABLE_HAND'>(getInitialTab());
 
   const [formData, setFormData] = useState({
     name: '',
