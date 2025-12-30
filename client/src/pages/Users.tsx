@@ -217,21 +217,21 @@ const UsersPage = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 w-full">
         <h1 className="font-display text-2xl md:text-3xl font-bold text-primary-800">
           {t('riders')} & {t('trainers')}
         </h1>
-        <button onClick={() => openModal()} className="btn btn-primary flex items-center gap-2">
+        <button onClick={() => openModal()} className="btn btn-primary flex items-center gap-2 shrink-0">
           <Plus className="w-5 h-5" />
           {t('add')}
         </button>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 border-b border-gray-200">
+      <div className="flex gap-2 border-b border-gray-200 w-full overflow-x-auto">
         <button
           onClick={() => setActiveTab('RIDER')}
-          className={`px-4 py-2 font-medium border-b-2 transition-colors ${
+          className={`px-4 py-2 font-medium border-b-2 transition-colors whitespace-nowrap ${
             activeTab === 'RIDER'
               ? 'border-primary-600 text-primary-600'
               : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -242,7 +242,7 @@ const UsersPage = () => {
         </button>
         <button
           onClick={() => setActiveTab('TRAINER')}
-          className={`px-4 py-2 font-medium border-b-2 transition-colors ${
+          className={`px-4 py-2 font-medium border-b-2 transition-colors whitespace-nowrap ${
             activeTab === 'TRAINER'
               ? 'border-primary-600 text-primary-600'
               : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -253,7 +253,7 @@ const UsersPage = () => {
         </button>
         <button
           onClick={() => setActiveTab('STABLE_HAND')}
-          className={`px-4 py-2 font-medium border-b-2 transition-colors ${
+          className={`px-4 py-2 font-medium border-b-2 transition-colors whitespace-nowrap ${
             activeTab === 'STABLE_HAND'
               ? 'border-primary-600 text-primary-600'
               : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -265,7 +265,7 @@ const UsersPage = () => {
       </div>
 
       {/* Users list */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 w-full">{filteredUsers.map((user) => (
         {filteredUsers.map((user) => (
           <div key={user.id} className="card card-hover">
             <div className="flex items-start justify-between mb-4">
