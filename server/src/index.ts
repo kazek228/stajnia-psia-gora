@@ -199,6 +199,104 @@ app.get('/api/change-password', async (req, res) => {
   }
 });
 
+// Backup endpoint - exports all data to JSON
+app.get('/api/backup', async (_, res) => {
+  try {
+    const users = await prisma.user.findMany();
+    const horses = await prisma.horse.findMany();
+    const schedules = await prisma.schedule.findMany();
+
+    const backup = {
+      timestamp: new Date().toISOString(),
+      version: '1.0',
+      data: {
+        users,
+        horses,
+        schedules,
+      }
+    };
+
+    res.json(backup);
+  } catch (error) {
+    console.error('Backup error:', error);
+    res.status(500).json({ error: 'Failed to create backup', details: String(error) });
+  }
+});
+
+// Restore endpoint - restores data from JSON backup
+// Usage: POST /api/restore with JSON body from backup
+app.post('/api/restore', async (req, res) => {
+  try {
+    const { data } = req.body;
+
+    if (!data || !data.users || !data.horses) {
+      return res.status(400).json({ 
+        error: 'Invalid backup format', 
+        hint: 'Send the full backup JSON obtained from /api/backup' 
+      });
+    }
+
+    // Delete existing data (in correct order due to foreign keys)
+    await prisma.schedule.deleteMany();
+    await prisma.horse.deleteMany();
+    await prisma.user.deleteMany();
+
+    // Restore users (without IDs - let DB generate new ones)
+    const userIdMap = new Map<number, number>(); // old ID -> new ID
+    for (const user of data.users) {
+      const { id: oldId, ...userData } = user;
+      const newUser = await prisma.user.create({ data: userData });
+      userIdMap.set(oldId, newUser.id);
+    }
+
+    // Restore horses
+    const horseIdMap = new Map<number, number>();
+    for (const horse of data.horses) {
+      const { id: oldId, ...horseData } = horse;
+      const newHorse = await prisma.horse.create({ data: horseData });
+      horseIdMap.set(oldId, newHorse.id);
+    }
+
+    // Restore schedules with mapped IDs
+    let schedulesRestored = 0;
+    if (data.schedules && data.schedules.length > 0) {
+      for (const schedule of data.schedules) {
+        const { id, horseId, riderId, trainerId, completedById, ...scheduleData } = schedule;
+        
+        const newHorseId = horseIdMap.get(horseId);
+        const newRiderId = riderId ? userIdMap.get(riderId) : null;
+        const newTrainerId = trainerId ? userIdMap.get(trainerId) : null;
+        const newCompletedById = completedById ? userIdMap.get(completedById) : null;
+
+        if (newHorseId) {
+          await prisma.schedule.create({
+            data: {
+              ...scheduleData,
+              horseId: newHorseId,
+              riderId: newRiderId,
+              trainerId: newTrainerId,
+              completedById: newCompletedById,
+            }
+          });
+          schedulesRestored++;
+        }
+      }
+    }
+
+    res.json({ 
+      message: 'Data restored successfully!',
+      restored: {
+        users: data.users.length,
+        horses: data.horses.length,
+        schedules: schedulesRestored,
+      }
+    });
+  } catch (error) {
+    console.error('Restore error:', error);
+    res.status(500).json({ error: 'Failed to restore data', details: String(error) });
+  }
+});
+
 // Serve static files in production
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../public')));
