@@ -35,6 +35,7 @@ const resources = {
       trainers: 'Trenerzy',
       schedule: 'Harmonogram',
       feeding: 'Karmienie',
+      statistics: 'Statystyki',
       settings: 'Ustawienia',
       mySchedule: 'Mój grafik',
       
@@ -104,6 +105,19 @@ const resources = {
       totalRiders: 'Jeźdźcy',
       totalTrainers: 'Trenerzy',
       
+      // Statistics
+      workStatistics: 'Statystyki pracy',
+      dailyStats: 'Statystyki dzienne',
+      monthlyStats: 'Statystyki miesięczne',
+      allTimeStats: 'Statystyki całościowe',
+      selectDate: 'Wybierz datę',
+      selectMonth: 'Wybierz miesiąc',
+      trainerWorkload: 'Obciążenie trenerów',
+      horseWorkload2: 'Obciążenie koni',
+      sessions: 'Sesje',
+      totalHours: 'Łącznie godzin',
+      noDataForPeriod: 'Brak danych dla wybranego okresu',
+      
       // Errors
       error: 'Błąd',
       serverError: 'Błąd serwera',
@@ -149,6 +163,7 @@ const resources = {
       trainers: 'Trainers',
       schedule: 'Schedule',
       feeding: 'Feeding',
+      statistics: 'Statistics',
       settings: 'Settings',
       mySchedule: 'My Schedule',
       
@@ -217,6 +232,19 @@ const resources = {
       totalHorses: 'Horses',
       totalRiders: 'Riders',
       totalTrainers: 'Trainers',
+      
+      // Statistics
+      workStatistics: 'Work Statistics',
+      dailyStats: 'Daily Statistics',
+      monthlyStats: 'Monthly Statistics',
+      allTimeStats: 'All-Time Statistics',
+      selectDate: 'Select Date',
+      selectMonth: 'Select Month',
+      trainerWorkload: 'Trainer Workload',
+      horseWorkload2: 'Horse Workload',
+      sessions: 'Sessions',
+      totalHours: 'Total Hours',
+      noDataForPeriod: 'No data for selected period',
       
       // Errors
       error: 'Error',

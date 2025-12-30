@@ -7,6 +7,7 @@ import Horses from './pages/Horses';
 import Users from './pages/Users';
 import Schedule from './pages/Schedule';
 import Feeding from './pages/Feeding';
+import Statistics from './pages/Statistics';
 import TrainerSchedule from './pages/TrainerSchedule';
 
 function App() {
@@ -55,6 +56,7 @@ function App() {
             <Route path="/users" element={<Users />} />
             <Route path="/schedule" element={<Schedule />} />
             <Route path="/feeding" element={<Feeding />} />
+            <Route path="/statistics" element={<Statistics />} />
           </>
         )}
 

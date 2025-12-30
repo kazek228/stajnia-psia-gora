@@ -12,6 +12,7 @@ import {
   Menu,
   X,
   Globe,
+  BarChart3,
 } from 'lucide-react';
 
 // Note: lucide-react doesn't have a Horse icon, using PawPrint as a placeholder
@@ -44,7 +45,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         { to: '/horses', icon: Horse, label: t('horses') },
         { to: '/users', icon: Users, label: t('riders') + ' & ' + t('trainers') },
         { to: '/schedule', icon: Calendar, label: t('schedule') },
-        { to: '/feeding', icon: Utensils, label: t('feeding') }
+        { to: '/feeding', icon: Utensils, label: t('feeding') },
+        { to: '/statistics', icon: BarChart3, label: t('statistics') }
       );
     } else {
       // Non-admin roles get their specific menu items

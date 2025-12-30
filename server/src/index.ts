@@ -10,6 +10,7 @@ import userRoutes from './routes/users';
 import scheduleRoutes from './routes/schedules';
 import feedingRoutes from './routes/feeding';
 import dashboardRoutes from './routes/dashboard';
+import statsRoutes from './routes/stats';
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/schedules', scheduleRoutes);
 app.use('/api/feeding', feedingRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/stats', statsRoutes);
 
 // Health check
 app.get('/api/health', (_, res) => {
