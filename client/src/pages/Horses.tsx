@@ -283,29 +283,32 @@ const Horses = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {t('maxWorkHours')}
+                    {t('maxWorkHours')} *
                   </label>
                   <input
                     type="number"
                     value={formData.maxWorkHours}
-                    onChange={(e) =>
-                      setFormData({ ...formData, maxWorkHours: parseInt(e.target.value) || 4 })
-                    }
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value);
+                      setFormData({ ...formData, maxWorkHours: isNaN(val) || val < 1 ? 1 : Math.min(val, 8) });
+                    }}
                     className="input"
                     min="1"
                     max="8"
+                    required
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {t('restAfterWork')}
+                    {t('restAfterWork')} *
                   </label>
                   <input
                     type="number"
                     value={formData.restAfterWork}
-                    onChange={(e) =>
-                      setFormData({ ...formData, restAfterWork: parseInt(e.target.value) || 1 })
-                    }
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value);
+                      setFormData({ ...formData, restAfterWork: isNaN(val) || val < 1 ? 1 : Math.min(val, 24) });
+                    }}
                     className="input"
                     min="1"
                     max="4"
