@@ -9,6 +9,13 @@
   --color-forest: #14532d;
 }
 
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow-x: hidden;
+}
+
 body {
   @apply bg-nature-gradient min-h-screen;
   font-family: 'Inter', system-ui, sans-serif;
