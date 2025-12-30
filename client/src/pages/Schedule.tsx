@@ -436,116 +436,119 @@ const Schedule = () => {
             <p>{t('noSchedules')}</p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {schedules
-              .sort((a, b) => a.startTime.localeCompare(b.startTime))
-              .map((schedule) => {
-                const levelMismatch = schedule.horse.level !== schedule.rider.level;
-
+          <div className="space-y-1">
+            {/* Group schedules by start time */}
+            {Array.from(new Set(schedules.map(s => s.startTime)))
+              .sort()
+              .map((timeSlot) => {
+                const schedulesAtTime = schedules.filter(s => s.startTime === timeSlot);
+                
                 return (
-                  <div
-                    key={schedule.id}
-                    className={`p-4 rounded-xl border ${
-                      levelMismatch
-                        ? 'bg-yellow-50 border-yellow-200'
-                        : 'bg-gray-50 border-gray-200'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="text-center">
-                          <p className="text-2xl font-bold text-primary-800">
-                            {schedule.startTime}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            - {schedule.endTime}
-                          </p>
-                        </div>
-
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <Horse className="w-4 h-4 text-primary-600" />
-                            <span className="font-medium">{schedule.horse.name}</span>
-                            <span className={getLevelBadge(schedule.horse.level)}>
-                              {getLevelLabel(schedule.horse.level)}
-                            </span>
-                          </div>
-
-                          <div className="flex items-center gap-2">
-                            <User className="w-4 h-4 text-earth-600" />
-                            <span>{schedule.rider.name}</span>
-                            <span className={getLevelBadge(schedule.rider.level)}>
-                              {getLevelLabel(schedule.rider.level)}
-                            </span>
-                          </div>
-
-                          <div className="flex items-center gap-2">
-                            <GraduationCap className="w-4 h-4 text-forest-600" />
-                            <span>{schedule.trainer.name}</span>
-                          </div>
-
-                          {schedule.price && (
-                            <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-200">
-                              <span className="text-sm font-medium text-gray-700">
-                                {schedule.price.toFixed(2)} PLN
-                              </span>
-                              <span
-                                className={`text-xs px-2 py-1 rounded ${
-                                  schedule.paid
-                                    ? 'bg-green-100 text-green-700'
-                                    : 'bg-orange-100 text-orange-700'
-                                }`}
-                              >
-                                {schedule.paid ? t('paid') : t('unpaid')}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        {levelMismatch && (
-                          <div className="flex items-center gap-1 text-yellow-600">
-                            <AlertTriangle className="w-4 h-4" />
-                            <span className="text-xs">{t('levelMismatch')}</span>
-                          </div>
-                        )}
-                        {schedule.status !== 'COMPLETED' && (
-                          <button
-                            onClick={() => handleComplete(schedule.id)}
-                            className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                            title="Zakończ jazdę"
-                          >
-                            <CheckCircle className="w-4 h-4" />
-                          </button>
-                        )}
-                        {schedule.status === 'COMPLETED' && (
-                          <span className="text-xs text-green-600 font-medium px-2 py-1 bg-green-50 rounded">
-                            ✓ Zakończono
-                          </span>
-                        )}
-                        <button
-                          onClick={() => openEditModal(schedule)}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                          title={t('edit')}
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(schedule.id)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title={t('delete')}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
+                  <div key={timeSlot} className="flex gap-2">
+                    {/* Time column */}
+                    <div className="w-20 flex-shrink-0 py-2">
+                      <p className="text-lg font-bold text-primary-800 text-right">{timeSlot}</p>
                     </div>
+                    
+                    {/* Sessions at this time */}
+                    <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                      {schedulesAtTime.map((schedule) => {
+                        const levelMismatch = schedule.horse.level !== schedule.rider.level;
 
-                    {schedule.notes && (
-                      <p className="mt-3 text-sm text-gray-600 pl-16">
-                        {schedule.notes}
-                      </p>
-                    )}
+                        return (
+                          <div
+                            key={schedule.id}
+                            className={`p-3 rounded-lg border ${
+                              levelMismatch
+                                ? 'bg-yellow-50 border-yellow-200'
+                                : 'bg-gray-50 border-gray-200'
+                            }`}
+                          >
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs text-gray-500">
+                                  {schedule.startTime} - {schedule.endTime}
+                                </span>
+                                <div className="flex items-center gap-1">
+                                  {levelMismatch && (
+                                    <div className="text-yellow-600" title={t('levelMismatch')}>
+                                      <AlertTriangle className="w-3 h-3" />
+                                    </div>
+                                  )}
+                                  {schedule.status !== 'COMPLETED' && (
+                                    <button
+                                      onClick={() => handleComplete(schedule.id)}
+                                      className="p-1 text-green-600 hover:bg-green-50 rounded transition-colors"
+                                      title="Zakończ jazdę"
+                                    >
+                                      <CheckCircle className="w-3 h-3" />
+                                    </button>
+                                  )}
+                                  {schedule.status === 'COMPLETED' && (
+                                    <span className="text-xs text-green-600">✓</span>
+                                  )}
+                                  <button
+                                    onClick={() => openEditModal(schedule)}
+                                    className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                    title={t('edit')}
+                                  >
+                                    <Pencil className="w-3 h-3" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDelete(schedule.id)}
+                                    className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
+                                    title={t('delete')}
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </button>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                <Horse className="w-3 h-3 text-primary-600 flex-shrink-0" />
+                                <span className="font-medium text-sm truncate">{schedule.horse.name}</span>
+                                <span className={getLevelBadge(schedule.horse.level) + ' text-xs'}>
+                                  {getLevelLabel(schedule.horse.level).substring(0, 3)}
+                                </span>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                <User className="w-3 h-3 text-earth-600 flex-shrink-0" />
+                                <span className="text-sm truncate">{schedule.rider.name}</span>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                <GraduationCap className="w-3 h-3 text-forest-600 flex-shrink-0" />
+                                <span className="text-sm truncate">{schedule.trainer.name}</span>
+                              </div>
+
+                              {schedule.price && (
+                                <div className="flex items-center justify-between pt-1 border-t border-gray-200">
+                                  <span className="text-xs font-medium text-gray-700">
+                                    {schedule.price.toFixed(2)} PLN
+                                  </span>
+                                  <span
+                                    className={`text-xs px-1.5 py-0.5 rounded ${
+                                      schedule.paid
+                                        ? 'bg-green-100 text-green-700'
+                                        : 'bg-orange-100 text-orange-700'
+                                    }`}
+                                  >
+                                    {schedule.paid ? '✓' : '✗'}
+                                  </span>
+                                </div>
+                              )}
+
+                              {schedule.notes && (
+                                <p className="text-xs text-gray-600 truncate" title={schedule.notes}>
+                                  {schedule.notes}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 );
               })}
