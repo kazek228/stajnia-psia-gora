@@ -268,20 +268,20 @@ const UsersPage = () => {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 w-full">
         {filteredUsers.map((user) => (
           <div key={user.id} className="card card-hover">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary-100 rounded-lg">
+            <div className="flex items-start justify-between gap-3 mb-4">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="p-2 bg-primary-100 rounded-lg shrink-0">
                   {hasRole(user.role, 'TRAINER') ? (
                     <GraduationCap className="w-6 h-6 text-primary-600" />
                   ) : (
                     <User className="w-6 h-6 text-primary-600" />
                   )}
                 </div>
-                <div>
-                  <h3 className="font-semibold text-primary-800">{user.name}</h3>
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-semibold text-primary-800 truncate">{user.name}</h3>
                   {/* Pokaż email tylko jeśli użytkownik może się logować (nie tylko RIDER) */}
                   {user.role !== 'RIDER' && !user.email?.includes('@nologin.local') && (
-                    <p className="text-sm text-gray-500">{user.email}</p>
+                    <p className="text-sm text-gray-500 truncate">{user.email}</p>
                   )}
                 </div>
               </div>
