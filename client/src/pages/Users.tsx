@@ -265,7 +265,7 @@ const UsersPage = () => {
       </div>
 
       {/* Users list */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 w-full">{filteredUsers.map((user) => (
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 w-full">
         {filteredUsers.map((user) => (
           <div key={user.id} className="card card-hover">
             <div className="flex items-start justify-between mb-4">
