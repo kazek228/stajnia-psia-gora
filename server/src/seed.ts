@@ -6,14 +6,17 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Seeding database...');
 
+  // Use environment variable for seed password
+  const seedPassword = process.env.SEED_PASSWORD || 'changeme123';
+  const hashedPassword = await bcrypt.hash(seedPassword, 10);
+
   // Create admin user
-  const adminPassword = await bcrypt.hash('admin123', 10);
   const admin = await prisma.user.upsert({
     where: { email: 'admin@stajnia.pl' },
     update: {},
     create: {
       email: 'admin@stajnia.pl',
-      password: adminPassword,
+      password: hashedPassword,
       name: 'Administrator',
       role: 'ADMIN',
     },
@@ -21,13 +24,12 @@ async function main() {
   console.log('✅ Admin created:', admin.email);
 
   // Create trainers
-  const trainerPassword = await bcrypt.hash('trainer123', 10);
   const trainer1 = await prisma.user.upsert({
     where: { email: 'anna@stajnia.pl' },
     update: {},
     create: {
       email: 'anna@stajnia.pl',
-      password: trainerPassword,
+      password: hashedPassword,
       name: 'Anna Kowalska',
       role: 'TRAINER',
       specialization: 'Ujeżdżenie / Dressage',
@@ -39,7 +41,7 @@ async function main() {
     update: {},
     create: {
       email: 'jan@stajnia.pl',
-      password: trainerPassword,
+      password: hashedPassword,
       name: 'Jan Nowak',
       role: 'TRAINER',
       specialization: 'Skoki / Jumping',
@@ -48,13 +50,12 @@ async function main() {
   console.log('✅ Trainers created');
 
   // Create riders
-  const riderPassword = await bcrypt.hash('rider123', 10);
   const rider1 = await prisma.user.upsert({
     where: { email: 'maria@example.com' },
     update: {},
     create: {
       email: 'maria@example.com',
-      password: riderPassword,
+      password: hashedPassword,
       name: 'Maria Wiśniewska',
       role: 'RIDER',
       level: 'ADVANCED',
@@ -66,7 +67,7 @@ async function main() {
     update: {},
     create: {
       email: 'piotr@example.com',
-      password: riderPassword,
+      password: hashedPassword,
       name: 'Piotr Zieliński',
       role: 'RIDER',
       level: 'INTERMEDIATE',
@@ -78,7 +79,7 @@ async function main() {
     update: {},
     create: {
       email: 'ewa@example.com',
-      password: riderPassword,
+      password: hashedPassword,
       name: 'Ewa Kamińska',
       role: 'RIDER',
       level: 'BEGINNER',
@@ -87,13 +88,12 @@ async function main() {
   console.log('✅ Riders created');
 
   // Create stable hand
-  const stableHandPassword = await bcrypt.hash('stable123', 10);
   const stableHand = await prisma.user.upsert({
     where: { email: 'tomek@stajnia.pl' },
     update: {},
     create: {
       email: 'tomek@stajnia.pl',
-      password: stableHandPassword,
+      password: hashedPassword,
       name: 'Tomasz Woźniak',
       role: 'STABLE_HAND',
     },
@@ -252,11 +252,11 @@ async function main() {
   console.log('✅ Feeding tasks created');
 
   console.log('\n🎉 Database seeded successfully!\n');
-  console.log('📋 Login credentials:');
-  console.log('   Admin: admin@stajnia.pl / admin123');
-  console.log('   Trainer: anna@stajnia.pl / trainer123');
-  console.log('   Rider: maria@example.com / rider123');
-  console.log('   Stable Hand: tomek@stajnia.pl / stable123');
+  console.log('📋 Demo accounts created (use SEED_PASSWORD env var or default: changeme123):');
+  console.log('   Admin: admin@stajnia.pl');
+  console.log('   Trainer: anna@stajnia.pl');
+  console.log('   Rider: maria@example.com');
+  console.log('   Stable Hand: tomek@stajnia.pl');
 }
 
 main()

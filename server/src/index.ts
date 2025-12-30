@@ -130,12 +130,7 @@ app.get('/api/seed', async (_, res) => {
 
     res.json({ 
       message: 'Database seeded successfully!',
-      credentials: {
-        admin: { email: 'admin@stajnia.pl', password: 'admin123' },
-        trainer: { email: 'anna@stajnia.pl', password: 'trainer123' },
-        rider: { email: 'maria@example.com', password: 'rider123' },
-        stableHand: { email: 'tomek@stajnia.pl', password: 'stable123' },
-      }
+      note: 'Default password for all demo accounts is set via SEED_PASSWORD env variable (default: changeme123)'
     });
   } catch (error) {
     console.error('Seed error:', error);
@@ -151,17 +146,15 @@ app.get('/api/reseed', async (_, res) => {
     await prisma.horse.deleteMany();
     await prisma.user.deleteMany();
 
-    const hashedPassword = await bcrypt.hash('admin123', 10);
-    const trainerPassword = await bcrypt.hash('trainer123', 10);
-    const riderPassword = await bcrypt.hash('rider123', 10);
-    const stablePassword = await bcrypt.hash('stable123', 10);
+    const seedPassword = process.env.SEED_PASSWORD || 'changeme123';
+    const hashedPassword = await bcrypt.hash(seedPassword, 10);
 
     await prisma.user.createMany({
       data: [
         { email: 'admin@stajnia.pl', password: hashedPassword, name: 'Administrator', role: 'ADMIN' },
-        { email: 'anna@stajnia.pl', password: trainerPassword, name: 'Anna Kowalska', role: 'TRAINER' },
-        { email: 'maria@example.com', password: riderPassword, name: 'Maria Nowak', role: 'RIDER', level: 'INTERMEDIATE' },
-        { email: 'tomek@stajnia.pl', password: stablePassword, name: 'Tomek Wiśniewski', role: 'STABLE_HAND' },
+        { email: 'anna@stajnia.pl', password: hashedPassword, name: 'Anna Kowalska', role: 'TRAINER' },
+        { email: 'maria@example.com', password: hashedPassword, name: 'Maria Nowak', role: 'RIDER', level: 'INTERMEDIATE' },
+        { email: 'tomek@stajnia.pl', password: hashedPassword, name: 'Tomek Wiśniewski', role: 'STABLE_HAND' },
       ]
     });
 
@@ -176,12 +169,7 @@ app.get('/api/reseed', async (_, res) => {
 
     res.json({ 
       message: 'Database reset and reseeded!',
-      credentials: {
-        admin: { email: 'admin@stajnia.pl', password: 'admin123' },
-        trainer: { email: 'anna@stajnia.pl', password: 'trainer123' },
-        rider: { email: 'maria@example.com', password: 'rider123' },
-        stableHand: { email: 'tomek@stajnia.pl', password: 'stable123' },
-      }
+      note: 'Default password for all demo accounts is set via SEED_PASSWORD env variable (default: changeme123)'
     });
   } catch (error) {
     console.error('Reseed error:', error);

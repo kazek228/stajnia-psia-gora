@@ -85,12 +85,14 @@ The application will be available at:
 
 ### Demo Credentials
 
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@stajnia.pl | admin123 |
-| Trainer | anna@stajnia.pl | trainer123 |
-| Rider | maria@example.com | rider123 |
-| Stable Hand | tomek@stajnia.pl | stable123 |
+Default password for all demo accounts is controlled by `SEED_PASSWORD` environment variable (default: `changeme123`).
+
+| Role | Email |
+|------|-------|
+| Admin | admin@stajnia.pl |
+| Trainer | anna@stajnia.pl |
+| Rider | maria@example.com |
+| Stable Hand | tomek@stajnia.pl |
 
 ## Project Structure
 
