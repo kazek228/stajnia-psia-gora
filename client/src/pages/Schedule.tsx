@@ -181,14 +181,35 @@ const Schedule = () => {
     }
   };
 
+  const getLevelValue = (level: string): number => {
+    switch (level) {
+      case 'BEGINNER':
+        return 1;
+      case 'INTERMEDIATE':
+        return 2;
+      case 'ADVANCED':
+        return 3;
+      default:
+        return 0;
+    }
+  };
+
   const checkLevelMatch = () => {
     const horse = horses.find((h) => h.id === formData.horseId);
     const rider = riders.find((r) => r.id === formData.riderId);
 
-    if (horse && rider && horse.level !== rider.level) {
-      setWarning(
-        `${t('levelMismatch')}: ${t('horses')}: ${getLevelLabel(horse.level)}, ${t('rider')}: ${getLevelLabel(rider.level || '')}`
-      );
+    if (horse && rider) {
+      const horseLevel = getLevelValue(horse.level);
+      const riderLevel = getLevelValue(rider.level || '');
+      
+      // Warning only if rider is less experienced than horse
+      if (riderLevel < horseLevel) {
+        setWarning(
+          `${t('levelMismatch')}: ${t('horses')}: ${getLevelLabel(horse.level)}, ${t('rider')}: ${getLevelLabel(rider.level || '')}`
+        );
+      } else {
+        setWarning('');
+      }
     } else {
       setWarning('');
     }
@@ -453,7 +474,9 @@ const Schedule = () => {
                     {/* Sessions at this time */}
                     <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                       {schedulesAtTime.map((schedule) => {
-                        const levelMismatch = schedule.horse.level !== schedule.rider.level;
+                        const horseLevel = getLevelValue(schedule.horse.level);
+                        const riderLevel = getLevelValue(schedule.rider.level);
+                        const levelMismatch = riderLevel < horseLevel; // Warning only if rider less experienced than horse
 
                         return (
                           <div

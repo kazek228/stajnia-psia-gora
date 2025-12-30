@@ -239,9 +239,24 @@ router.post('/', authenticateToken, requireRole('ADMIN'), async (req: AuthReques
     const horse = await prisma.horse.findUnique({ where: { id: horseId } });
     const rider = await prisma.user.findUnique({ where: { id: riderId } });
 
+    const getLevelValue = (level: string): number => {
+      switch (level) {
+        case 'BEGINNER': return 1;
+        case 'INTERMEDIATE': return 2;
+        case 'ADVANCED': return 3;
+        default: return 0;
+      }
+    };
+
     let levelWarning: string | null = null;
-    if (horse && rider && horse.level !== rider.level) {
-      levelWarning = `Level mismatch: Horse is ${horse.level}, Rider is ${rider.level}`;
+    if (horse && rider) {
+      const horseLevel = getLevelValue(horse.level);
+      const riderLevel = getLevelValue(rider.level || '');
+      
+      // Warning only if rider is less experienced than horse
+      if (riderLevel < horseLevel) {
+        levelWarning = `Niezgodność poziomów: Koń jest ${horse.level}, Jeździec jest ${rider.level}`;
+      }
     }
 
     const endTime = calculateEndTime(startTime, duration);
