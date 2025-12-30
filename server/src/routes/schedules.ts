@@ -27,7 +27,7 @@ async function checkHorseWelfare(
 
   if (!horse) {
     result.valid = false;
-    result.errors.push('Horse not found');
+    result.errors.push('Nie znaleziono konia');
     return result;
   }
 
@@ -58,7 +58,7 @@ async function checkHorseWelfare(
   if (newTotalMinutes > maxMinutes) {
     result.valid = false;
     result.errors.push(
-      `Horse would exceed daily work limit. Current: ${existingMinutes}min, New: ${duration}min, Max: ${maxMinutes}min`
+      `Koń przekroczyłby dzienny limit pracy. Aktualne: ${existingMinutes}min, Nowe: ${duration}min, Maks: ${maxMinutes}min`
     );
   }
 
@@ -76,7 +76,7 @@ async function checkHorseWelfare(
     if (newStartsBeforeExistingEnds && newEndsAfterExistingStarts) {
       result.valid = false;
       result.errors.push(
-        `Horse already has a scheduled ride at this time. Existing: ${existing.startTime}-${existingEndTime}, New: ${newStartTime}-${newEndTime}`
+        `Koń ma już zaplanowaną jazdę w tym czasie. Istniejąca: ${existing.startTime}-${existingEndTime}, Nowa: ${newStartTime}-${newEndTime}`
       );
       break;
     }
@@ -97,7 +97,7 @@ async function checkHorseWelfare(
       if (breakMinutes < horse.restAfterWork * 60 && consecutiveMinutes >= 120) {
         result.valid = false;
         result.errors.push(
-          `Horse needs ${horse.restAfterWork}h rest after 2h of work. Only ${breakMinutes}min break detected.`
+          `Koń potrzebuje ${horse.restAfterWork}h przerwy po 2h pracy. Wykryto tylko ${breakMinutes}min przerwy.`
         );
       }
       if (breakMinutes >= horse.restAfterWork * 60) {
