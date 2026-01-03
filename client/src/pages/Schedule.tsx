@@ -19,7 +19,6 @@ import {
   Pencil,
   Copy,
 } from 'lucide-react';
-} from 'lucide-react';
 
 const Horse = PawPrint;
 import api from '../services/api';
