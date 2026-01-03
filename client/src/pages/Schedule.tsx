@@ -164,6 +164,7 @@ const Schedule = () => {
         date: format(selectedDate, 'yyyy-MM-dd'),
         startTime: formData.startTime,
         duration: formData.duration,
+        scheduleId: editingSchedule?.id,
       });
 
       if (!response.data.valid) {

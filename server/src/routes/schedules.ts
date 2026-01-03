@@ -435,9 +435,15 @@ router.post('/:id/complete', authenticateToken, requireRole('ADMIN'), async (req
 // Validate schedule (check welfare before creating)
 router.post('/validate', authenticateToken, async (req, res) => {
   try {
-    const { horseId, date, startTime, duration } = req.body;
+    const { horseId, date, startTime, duration, scheduleId } = req.body;
 
-    const welfareCheck = await checkHorseWelfare(horseId, new Date(date), startTime, duration);
+    const welfareCheck = await checkHorseWelfare(
+      horseId,
+      new Date(date),
+      startTime,
+      duration,
+      scheduleId
+    );
 
     res.json(welfareCheck);
   } catch (error) {
