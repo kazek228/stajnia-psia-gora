@@ -804,6 +804,7 @@ const Schedule = () => {
                     }
                     className="input"
                   >
+                    <option value={15}>15 min</option>
                     <option value={30}>30 min</option>
                     <option value={45}>45 min</option>
                     <option value={60}>60 min</option>
