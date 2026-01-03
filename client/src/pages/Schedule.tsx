@@ -75,6 +75,7 @@ const Schedule = () => {
   const [editingSchedule, setEditingSchedule] = useState<ScheduleData | null>(null);
   const [error, setError] = useState('');
   const [warning, setWarning] = useState('');
+  const [initialDateSet, setInitialDateSet] = useState(false);
 
   const [formData, setFormData] = useState({
     horseId: '',
@@ -89,9 +90,44 @@ const Schedule = () => {
 
   const locale = language === 'pl' ? pl : enUS;
 
+  // Find first non-empty day with schedules
   useEffect(() => {
-    fetchData();
-  }, [selectedDate]);
+    const findFirstScheduleDay = async () => {
+      if (initialDateSet) return;
+      
+      try {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        // Check next 30 days for schedules
+        for (let i = 0; i < 30; i++) {
+          const checkDate = addDays(today, i);
+          const dateStr = format(checkDate, 'yyyy-MM-dd');
+          const response = await api.get(`/schedules/date/${dateStr}`);
+          
+          if (response.data && response.data.length > 0) {
+            setSelectedDate(checkDate);
+            setInitialDateSet(true);
+            return;
+          }
+        }
+        
+        // If no schedules found in next 30 days, stay on today
+        setInitialDateSet(true);
+      } catch (error) {
+        console.error('Failed to find first schedule day:', error);
+        setInitialDateSet(true);
+      }
+    };
+
+    findFirstScheduleDay();
+  }, [initialDateSet]);
+
+  useEffect(() => {
+    if (initialDateSet) {
+      fetchData();
+    }
+  }, [selectedDate, initialDateSet]);
 
   const fetchData = async () => {
     try {
