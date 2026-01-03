@@ -96,8 +96,7 @@ async function checkHorseWelfare(
     if (lastEndTime) {
       const breakMinutes = getMinutesBetween(lastEndTime, schedule.startTime);
       if (breakMinutes < horse.restAfterWork * 60 && consecutiveMinutes >= 120) {
-        result.valid = false;
-        result.errors.push(
+        result.warnings.push(
           `Koń potrzebuje ${horse.restAfterWork}h przerwy po 2h pracy. Wykryto tylko ${breakMinutes}min przerwy.`
         );
       }
