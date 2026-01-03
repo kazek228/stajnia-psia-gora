@@ -33,6 +33,7 @@ async function main() {
       name: 'Anna Kowalska',
       role: 'TRAINER',
       specialization: 'Ujeżdżenie / Dressage',
+      color: '#FF69B4',
     },
   });
   
@@ -45,6 +46,7 @@ async function main() {
       name: 'Jan Nowak',
       role: 'TRAINER',
       specialization: 'Skoki / Jumping',
+      color: '#4ADE80',
     },
   });
   console.log('✅ Trainers created');

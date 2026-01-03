@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -17,6 +17,7 @@ model User {
   role          String    // ADMIN, RIDER, TRAINER, STABLE_HAND
   level         String?   // For riders: BEGINNER, INTERMEDIATE, ADVANCED
   specialization String? // For trainers
+  color         String?   // For trainers: color in schedule (e.g., #FF69B4)
   
   // Payment info for riders
   paymentMethod   String?   // BLIK, CASH, SUBSCRIPTION

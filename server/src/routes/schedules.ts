@@ -147,7 +147,7 @@ router.get('/date/:date', authenticateToken, async (req, res) => {
           select: { id: true, name: true, level: true },
         },
         trainer: {
-          select: { id: true, name: true, specialization: true },
+          select: { id: true, name: true, specialization: true, color: true },
         },
       },
       orderBy: { startTime: 'asc' },
@@ -176,7 +176,7 @@ router.get('/my-schedules', authenticateToken, async (req: AuthRequest, res: Res
           select: { id: true, name: true, breed: true },
         },
         trainer: {
-          select: { id: true, name: true },
+          select: { id: true, name: true, color: true },
         },
       },
       orderBy: [{ date: 'asc' }, { startTime: 'asc' }],
@@ -277,7 +277,7 @@ router.post('/', authenticateToken, requireRole('ADMIN'), async (req: AuthReques
       include: {
         horse: true,
         rider: { select: { id: true, name: true, level: true } },
-        trainer: { select: { id: true, name: true } },
+        trainer: { select: { id: true, name: true, color: true } },
       },
     });
 
@@ -359,7 +359,7 @@ router.put('/:id', authenticateToken, requireRole('ADMIN'), async (req: AuthRequ
       include: {
         horse: true,
         rider: { select: { id: true, name: true, level: true } },
-        trainer: { select: { id: true, name: true } },
+        trainer: { select: { id: true, name: true, color: true } },
       },
     });
 
