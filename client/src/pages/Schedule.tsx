@@ -35,7 +35,7 @@ interface ScheduleData {
   paid: boolean;
   horse: { id: string; name: string; level: string };
   rider: { id: string; name: string; level: string };
-  trainer: { id: string; name: string };
+  trainer: { id: string; name: string; color?: string };
 }
 
 interface HorseData {
