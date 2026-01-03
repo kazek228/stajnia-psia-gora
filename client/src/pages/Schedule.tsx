@@ -940,7 +940,7 @@ const Schedule = () => {
                 </div>
 
                 <p className="text-xs text-gray-500 mt-3">
-                  {isSourceDay ? '🔵 Dzień źródłowy' : ''} 
+                  🔵 = Dzień źródłowy
                   {selectedTargetDates.length > 0 && ` | ✅ Wybrano: ${selectedTargetDates.length}`}
                 </p>
               </div>
