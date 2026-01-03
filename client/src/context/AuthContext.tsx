@@ -21,6 +21,7 @@ interface AuthContextType {
   token: string | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  refreshToken: () => Promise<void>;
   isLoading: boolean;
   isAuthenticated: boolean;
   hasRole: (role: string) => boolean;
@@ -67,6 +68,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUser(null);
   };
 
+  const refreshToken = async () => {
+    try {
+      const response = await api.post('/auth/refresh-token');
+      const { token: newToken, user: userData } = response.data;
+      
+      localStorage.setItem('token', newToken);
+      setToken(newToken);
+      setUser(userData);
+    } catch (error) {
+      console.error('Failed to refresh token:', error);
+      throw error;
+    }
+  };
+
   const checkRole = (role: string): boolean => {
     return hasRole(user, role);
   };
@@ -78,6 +93,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         token,
         login,
         logout,
+        refreshToken,
         isLoading,
         isAuthenticated: !!user,
         hasRole: checkRole,

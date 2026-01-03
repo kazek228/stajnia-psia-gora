@@ -13,6 +13,7 @@ import {
   X,
   Globe,
   BarChart3,
+  RefreshCw,
 } from 'lucide-react';
 
 // Note: lucide-react doesn't have a Horse icon, using PawPrint as a placeholder
@@ -25,14 +26,27 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { t } = useTranslation();
-  const { user, logout } = useAuth();
+  const { user, logout, refreshToken } = useAuth();
   const { language, toggleLanguage } = useLanguage();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const handleRefreshToken = async () => {
+    setIsRefreshing(true);
+    try {
+      await refreshToken();
+      alert('Uprawnienia odświeżone!');
+    } catch (error) {
+      alert('Błąd podczas odświeżania uprawnień');
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   const getNavItems = () => {
@@ -163,6 +177,17 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <span>{language === 'pl' ? 'English' : 'Polski'}</span>
             </button>
             <button
+              onClick={() => {
+                handleRefreshToken();
+                setIsMobileMenuOpen(false);
+              }}
+              disabled={isRefreshing}
+              className="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:bg-white/10 hover:text-white transition-colors w-full disabled:opacity-50"
+            >
+              <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span>Odśwież uprawnienia</span>
+            </button>
+            <button
               onClick={handleLogout}
               className="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:bg-white/10 hover:text-white transition-colors w-full"
             >
@@ -217,6 +242,15 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             >
               <Globe className="w-5 h-5" />
               <span>{language === 'pl' ? 'English' : 'Polski'}</span>
+            </button>
+
+            <button
+              onClick={handleRefreshToken}
+              disabled={isRefreshing}
+              className="flex items-center gap-3 px-4 py-2 rounded-lg text-white/80 hover:bg-white/10 hover:text-white transition-colors w-full mb-2 disabled:opacity-50"
+            >
+              <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span>Odśwież uprawnienia</span>
             </button>
 
             <button
