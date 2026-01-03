@@ -11,6 +11,7 @@ interface UserData {
   role: string;
   level?: string;
   specialization?: string;
+  color?: string;
   paymentMethod?: string;
   subscriptionHours?: number;
 }
@@ -46,6 +47,7 @@ const UsersPage = () => {
     roles: [] as string[],
     level: 'BEGINNER',
     specialization: '',
+    color: '#4ADE80',
     paymentMethod: 'CASH',
     subscriptionHours: 0,
   });
@@ -75,6 +77,7 @@ const UsersPage = () => {
         roles: user.role.split(','),
         level: user.level || 'BEGINNER',
         specialization: user.specialization || '',
+        color: user.color || '#4ADE80',
         paymentMethod: user.paymentMethod || 'CASH',
         subscriptionHours: user.subscriptionHours || 0,
       });
@@ -87,6 +90,7 @@ const UsersPage = () => {
         roles: [activeTab],
         level: 'BEGINNER',
         specialization: '',
+        color: '#4ADE80',
         paymentMethod: 'CASH',
         subscriptionHours: 0,
       });
@@ -149,6 +153,7 @@ const UsersPage = () => {
         }
         if (formData.roles.includes('TRAINER')) {
           updateData.specialization = formData.specialization;
+          updateData.color = formData.color;
         }
         await api.put(`/users/${editingUser.id}`, updateData);
       } else {
@@ -530,18 +535,38 @@ const UsersPage = () => {
               )}
 
               {formData.roles.includes('TRAINER') && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Specjalizacja
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.specialization}
-                    onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
-                    className="input"
-                    placeholder="np. Ujeżdżenie, Skoki"
-                  />
-                </div>
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Specjalizacja
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.specialization}
+                      onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
+                      className="input"
+                      placeholder="np. Ujeżdżenie, Skoki"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Kolor w harmonogramie
+                    </label>
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="color"
+                        value={formData.color}
+                        onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+                        className="h-10 w-20 rounded border border-gray-300 cursor-pointer"
+                      />
+                      <span className="text-sm text-gray-600">{formData.color}</span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Sesje z tym trenerem będą oznaczane tym kolorem
+                    </p>
+                  </div>
+                </>
               )}
 
               <div className="flex gap-3 pt-4">

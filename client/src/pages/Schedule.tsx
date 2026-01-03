@@ -484,9 +484,16 @@ const Schedule = () => {
                             key={schedule.id}
                             className={`p-3 rounded-lg border ${
                               levelMismatch
-                                ? 'bg-yellow-50 border-yellow-200'
-                                : 'bg-gray-50 border-gray-200'
+                                ? 'border-yellow-400 border-2'
+                                : 'border-gray-300'
                             }`}
+                            style={{
+                              backgroundColor: schedule.trainer.color 
+                                ? `${schedule.trainer.color}15` 
+                                : levelMismatch ? '#fef3c7' : '#f9fafb',
+                              borderLeftWidth: '4px',
+                              borderLeftColor: schedule.trainer.color || '#d1d5db'
+                            }}
                           >
                             <div className="space-y-2">
                               <div className="flex items-center justify-between">
