@@ -81,6 +81,7 @@ const Schedule = () => {
   const [selectedTargetDates, setSelectedTargetDates] = useState<Date[]>([]);
   const [copyError, setCopyError] = useState('');
   const [copySuccess, setCopySuccess] = useState('');
+  const [selectedTrainerIds, setSelectedTrainerIds] = useState<string[]>([]);
 
   const [formData, setFormData] = useState({
     horseId: '',
@@ -230,6 +231,20 @@ const Schedule = () => {
         return [...prev, date];
       }
     });
+  };
+
+  const toggleTrainerFilter = (trainerId: string) => {
+    setSelectedTrainerIds(prev => {
+      if (prev.includes(trainerId)) {
+        return prev.filter(id => id !== trainerId);
+      } else {
+        return [...prev, trainerId];
+      }
+    });
+  };
+
+  const showAllTrainers = () => {
+    setSelectedTrainerIds([]);
   };
 
   const handleCopySchedule = async () => {
@@ -552,14 +567,46 @@ const Schedule = () => {
 
       {/* Schedule list */}
       <div className="card">
-        <div className="flex items-center gap-3 mb-6">
-          <Calendar className="w-6 h-6 text-primary-600" />
-          <h2 className="text-xl font-semibold text-primary-800">
-            {format(selectedDate, 'EEEE, d MMMM', { locale })}
-          </h2>
+        <div className="flex flex-col gap-4 mb-6">
+          <div className="flex items-center gap-3">
+            <Calendar className="w-6 h-6 text-primary-600" />
+            <h2 className="text-xl font-semibold text-primary-800">
+              {format(selectedDate, 'EEEE, d MMMM', { locale })}
+            </h2>
+          </div>
+          
+          {/* Trainer filters */}
+          {trainers.length > 0 && (
+            <div className="flex flex-wrap gap-2 items-center">
+              <span className="text-sm text-gray-600 font-medium">Trener:</span>
+              <button
+                onClick={showAllTrainers}
+                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                  selectedTrainerIds.length === 0
+                    ? 'bg-primary-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Wszyscy
+              </button>
+              {trainers.map((trainer) => (
+                <button
+                  key={trainer.id}
+                  onClick={() => toggleTrainerFilter(trainer.id)}
+                  className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                    selectedTrainerIds.includes(trainer.id)
+                      ? 'bg-primary-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {trainer.name}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
-        {schedules.length === 0 ? (
+        {schedules.filter(s => selectedTrainerIds.length === 0 || selectedTrainerIds.includes(s.trainer.id)).length === 0 ? (
           <div className="text-center py-12 text-gray-500">
             <Clock className="w-12 h-12 mx-auto mb-4 opacity-50" />
             <p>{t('noSchedules')}</p>
@@ -567,10 +614,10 @@ const Schedule = () => {
         ) : (
           <div className="space-y-1">
             {/* Group schedules by start time */}
-            {Array.from(new Set(schedules.map(s => s.startTime)))
+            {Array.from(new Set(schedules.filter(s => selectedTrainerIds.length === 0 || selectedTrainerIds.includes(s.trainer.id)).map(s => s.startTime)))
               .sort()
               .map((timeSlot) => {
-                const schedulesAtTime = schedules.filter(s => s.startTime === timeSlot);
+                const schedulesAtTime = schedules.filter(s => s.startTime === timeSlot && (selectedTrainerIds.length === 0 || selectedTrainerIds.includes(s.trainer.id)));
                 
                 return (
                   <div key={timeSlot} className="flex gap-2">
