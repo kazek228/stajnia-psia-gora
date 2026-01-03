@@ -17,6 +17,8 @@ import {
   Trash2,
   CheckCircle,
   Pencil,
+  Copy,
+} from 'lucide-react';
 } from 'lucide-react';
 
 const Horse = PawPrint;
@@ -76,6 +78,10 @@ const Schedule = () => {
   const [error, setError] = useState('');
   const [warning, setWarning] = useState('');
   const [initialDateSet, setInitialDateSet] = useState(false);
+  const [isCopyModalOpen, setIsCopyModalOpen] = useState(false);
+  const [selectedTargetDates, setSelectedTargetDates] = useState<Date[]>([]);
+  const [copyError, setCopyError] = useState('');
+  const [copySuccess, setCopySuccess] = useState('');
 
   const [formData, setFormData] = useState({
     horseId: '',
@@ -191,6 +197,66 @@ const Schedule = () => {
     setEditingSchedule(null);
     setError('');
     setWarning('');
+  };
+
+  const openCopyModal = () => {
+    if (schedules.length === 0) {
+      alert(t('noSchedulesToCopy') || 'Brak jazd do skopiowania');
+      return;
+    }
+    setIsCopyModalOpen(true);
+    setSelectedTargetDates([]);
+    setCopyError('');
+    setCopySuccess('');
+  };
+
+  const closeCopyModal = () => {
+    setIsCopyModalOpen(false);
+    setSelectedTargetDates([]);
+    setCopyError('');
+    setCopySuccess('');
+  };
+
+  const toggleDateSelection = (date: Date) => {
+    const dateStr = format(date, 'yyyy-MM-dd');
+    const currentDateStr = format(selectedDate, 'yyyy-MM-dd');
+    
+    if (dateStr === currentDateStr) return; // Can't copy to same day
+
+    setSelectedTargetDates(prev => {
+      const exists = prev.some(d => format(d, 'yyyy-MM-dd') === dateStr);
+      if (exists) {
+        return prev.filter(d => format(d, 'yyyy-MM-dd') !== dateStr);
+      } else {
+        return [...prev, date];
+      }
+    });
+  };
+
+  const handleCopySchedule = async () => {
+    if (selectedTargetDates.length === 0) {
+      setCopyError('Wybierz przynajmniej jeden dzień docelowy');
+      return;
+    }
+
+    try {
+      const response = await api.post('/schedules/copy-day', {
+        sourceDate: format(selectedDate, 'yyyy-MM-dd'),
+        targetDates: selectedTargetDates.map(d => format(d, 'yyyy-MM-dd')),
+      });
+
+      setCopySuccess(`Skopiowano ${response.data.copiedCount} z ${response.data.totalAttempts} jazd`);
+      if (response.data.errors && response.data.errors.length > 0) {
+        setCopyError(`Błędy:\n${response.data.errors.slice(0, 5).join('\n')}`);
+      }
+      
+      setTimeout(() => {
+        closeCopyModal();
+        fetchData();
+      }, 2000);
+    } catch (err: any) {
+      setCopyError(err.response?.data?.error || 'Błąd podczas kopiowania');
+    }
   };
 
   const validateWelfare = async () => {
@@ -361,10 +427,16 @@ const Schedule = () => {
         <h1 className="font-display text-2xl md:text-3xl font-bold text-primary-800">
           {t('sundayPlanner')}
         </h1>
-        <button onClick={openModal} className="btn btn-primary flex items-center gap-2">
-          <Plus className="w-5 h-5" />
-          {t('addSession')}
-        </button>
+        <div className="flex gap-2">
+          <button onClick={openCopyModal} className="btn btn-outline flex items-center gap-2">
+            <Copy className="w-5 h-5" />
+            Kopiuj dzień
+          </button>
+          <button onClick={openModal} className="btn btn-primary flex items-center gap-2">
+            <Plus className="w-5 h-5" />
+            {t('addSession')}
+          </button>
+        </div>
       </div>
 
       {/* Week navigation */}
@@ -790,6 +862,108 @@ const Schedule = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Copy Day Modal */}
+      {isCopyModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-fade-in">
+            <div className="flex items-center justify-between p-6 border-b border-gray-100">
+              <h2 className="text-xl font-semibold text-primary-800 flex items-center gap-2">
+                <Copy className="w-5 h-5" />
+                Kopiuj harmonogram z {format(selectedDate, 'd MMMM', { locale })}
+              </h2>
+              <button
+                onClick={closeCopyModal}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {copyError && (
+                <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                  <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                  <span className="text-sm whitespace-pre-line">{copyError}</span>
+                </div>
+              )}
+
+              {copySuccess && (
+                <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700">
+                  <CheckCircle className="w-5 h-5 flex-shrink-0" />
+                  <span className="text-sm">{copySuccess}</span>
+                </div>
+              )}
+
+              <div>
+                <p className="text-sm text-gray-600 mb-3">
+                  Źródło: {schedules.length} {schedules.length === 1 ? 'jazda' : 'jazd'} zaplanowanych
+                </p>
+                <p className="text-sm font-medium text-gray-700 mb-3">
+                  Wybierz dni, do których chcesz skopiować harmonogram:
+                </p>
+
+                <div className="grid grid-cols-7 gap-2">
+                  {Array.from({ length: 35 }, (_, i) => {
+                    const date = addDays(startOfWeek(selectedDate, { weekStartsOn: 1 }), i);
+                    const isSelected = selectedTargetDates.some(d => 
+                      format(d, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd')
+                    );
+                    const isSourceDay = format(date, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd');
+                    const isPast = date < new Date(new Date().setHours(0, 0, 0, 0));
+
+                    return (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => toggleDateSelection(date)}
+                        disabled={isSourceDay || isPast}
+                        className={`
+                          p-2 rounded-lg text-sm font-medium transition-all
+                          ${isSourceDay 
+                            ? 'bg-primary-600 text-white cursor-not-allowed' 
+                            : isPast
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : isSelected
+                            ? 'bg-green-500 text-white hover:bg-green-600'
+                            : 'bg-gray-50 hover:bg-gray-100 text-gray-700'
+                          }
+                        `}
+                      >
+                        <div className="text-xs">{format(date, 'EEE', { locale })}</div>
+                        <div>{format(date, 'd')}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <p className="text-xs text-gray-500 mt-3">
+                  {isSourceDay ? '🔵 Dzień źródłowy' : ''} 
+                  {selectedTargetDates.length > 0 && ` | ✅ Wybrano: ${selectedTargetDates.length}`}
+                </p>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button 
+                  type="button" 
+                  onClick={closeCopyModal} 
+                  className="btn btn-outline flex-1"
+                >
+                  Anuluj
+                </button>
+                <button 
+                  type="button"
+                  onClick={handleCopySchedule}
+                  disabled={selectedTargetDates.length === 0}
+                  className="btn btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Kopiuj do {selectedTargetDates.length} {selectedTargetDates.length === 1 ? 'dnia' : 'dni'}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

@@ -1,6 +1,7 @@
 import { Router, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { authenticateToken, requireRole, AuthRequest } from '../middleware/auth';
+import { format } from 'date-fns';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -493,6 +494,106 @@ router.get('/workload/:date', authenticateToken, async (req, res) => {
 
     res.json(workloads);
   } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Copy schedule from one day to multiple days (Admin only)
+router.post('/copy-day', authenticateToken, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
+  try {
+    const { sourceDate, targetDates } = req.body;
+
+    if (!sourceDate || !targetDates || !Array.isArray(targetDates) || targetDates.length === 0) {
+      return res.status(400).json({ error: 'Missing sourceDate or targetDates' });
+    }
+
+    // Get all schedules from source date
+    const sourceDateObj = new Date(sourceDate);
+    const startOfDay = new Date(sourceDateObj);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(sourceDateObj);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const sourceSchedules = await prisma.schedule.findMany({
+      where: {
+        date: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
+        status: 'SCHEDULED',
+      },
+      include: {
+        horse: true,
+      },
+    });
+
+    if (sourceSchedules.length === 0) {
+      return res.status(400).json({ error: 'No schedules found on source date' });
+    }
+
+    let copiedCount = 0;
+    const errors: string[] = [];
+
+    // Copy to each target date
+    for (const targetDateStr of targetDates) {
+      const targetDate = new Date(targetDateStr);
+
+      for (const schedule of sourceSchedules) {
+        try {
+          // Check welfare for target date
+          const welfareCheck = await checkHorseWelfare(
+            schedule.horseId,
+            targetDate,
+            schedule.startTime,
+            schedule.duration
+          );
+
+          if (welfareCheck.valid) {
+            await prisma.schedule.create({
+              data: {
+                horseId: schedule.horseId,
+                riderId: schedule.riderId,
+                trainerId: schedule.trainerId,
+                date: targetDate,
+                startTime: schedule.startTime,
+                endTime: schedule.endTime,
+                duration: schedule.duration,
+                notes: schedule.notes,
+                price: schedule.price,
+                paid: false, // Reset paid status for copied schedules
+              },
+            });
+
+            // Create feeding task if horse has post-training meal
+            if (schedule.horse?.postTrainingMeal) {
+              await prisma.feedingTask.create({
+                data: {
+                  horseName: schedule.horse.name,
+                  endTime: schedule.endTime,
+                  mealDescription: schedule.horse.postTrainingMeal,
+                  date: targetDate,
+                },
+              });
+            }
+
+            copiedCount++;
+          } else {
+            errors.push(`${format(targetDate, 'yyyy-MM-dd')} ${schedule.startTime}: ${welfareCheck.errors.join(', ')}`);
+          }
+        } catch (err) {
+          errors.push(`${format(targetDate, 'yyyy-MM-dd')} ${schedule.startTime}: Failed to copy`);
+        }
+      }
+    }
+
+    res.json({
+      message: 'Copy completed',
+      copiedCount,
+      totalAttempts: sourceSchedules.length * targetDates.length,
+      errors: errors.length > 0 ? errors : undefined,
+    });
+  } catch (error) {
+    console.error('Copy schedule error:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
