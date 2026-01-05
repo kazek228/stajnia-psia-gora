@@ -6,6 +6,59 @@ import { format } from 'date-fns';
 const router = Router();
 const prisma = new PrismaClient();
 
+// Auto-complete past schedules
+async function autoCompletePastSchedules() {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+  // Find all uncompleted schedules where date is before today OR (date is today AND endTime has passed)
+  const schedules = await prisma.schedule.findMany({
+    where: {
+      status: { not: 'COMPLETED' },
+      OR: [
+        { date: { lt: today } },
+        {
+          AND: [
+            { date: { gte: today, lt: new Date(today.getTime() + 86400000) } },
+            { endTime: { lte: currentTime } }
+          ]
+        }
+      ]
+    },
+    include: {
+      rider: {
+        select: {
+          id: true,
+          paymentMethod: true,
+          subscriptionHours: true
+        }
+      }
+    }
+  });
+
+  // Complete each past schedule
+  for (const schedule of schedules) {
+    await prisma.schedule.update({
+      where: { id: schedule.id },
+      data: { status: 'COMPLETED' }
+    });
+
+    // Deduct hours from subscription if rider has SUBSCRIPTION payment method
+    if (schedule.rider.paymentMethod === 'SUBSCRIPTION' && schedule.rider.subscriptionHours && schedule.rider.subscriptionHours > 0) {
+      const hoursToDeduct = schedule.duration / 60;
+      await prisma.user.update({
+        where: { id: schedule.rider.id },
+        data: {
+          subscriptionHours: Math.max(0, schedule.rider.subscriptionHours - hoursToDeduct)
+        }
+      });
+    }
+  }
+
+  return schedules.length;
+}
+
 // Welfare validation helper
 interface WelfareCheck {
   valid: boolean;
@@ -128,6 +181,9 @@ function getMinutesBetween(time1: string, time2: string): number {
 // Get all schedules for a date
 router.get('/date/:date', authenticateToken, async (req, res) => {
   try {
+    // Auto-complete past schedules before fetching
+    await autoCompletePastSchedules();
+
     const targetDate = new Date(req.params.date);
     const startOfDay = new Date(targetDate);
     startOfDay.setHours(0, 0, 0, 0);

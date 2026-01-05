@@ -380,20 +380,6 @@ const Schedule = () => {
     }
   };
 
-  const handleComplete = async (id: string) => {
-    if (!confirm('Zakończyć jazdę? Godziny zostaną odjęte z karnetu jeśli dotyczy.')) return;
-
-    try {
-      const response = await api.post(`/schedules/${id}/complete`);
-      fetchData();
-      if (response.data.remainingHours !== undefined) {
-        alert(`Jazda zakończona. Pozostało ${response.data.remainingHours}h na karnecie.`);
-      }
-    } catch (error) {
-      console.error('Failed to complete schedule:', error);
-    }
-  };
-
   const getLevelLabel = (level: string) => {
     switch (level) {
       case 'BEGINNER':
@@ -605,17 +591,8 @@ const Schedule = () => {
                                       <AlertTriangle className="w-3 h-3" />
                                     </div>
                                   )}
-                                  {schedule.status !== 'COMPLETED' && (
-                                    <button
-                                      onClick={() => handleComplete(schedule.id)}
-                                      className="p-1 text-green-600 hover:bg-green-50 rounded transition-colors"
-                                      title="Zakończ jazdę"
-                                    >
-                                      <CheckCircle className="w-3 h-3" />
-                                    </button>
-                                  )}
                                   {schedule.status === 'COMPLETED' && (
-                                    <span className="text-xs text-green-600">✓</span>
+                                    <span className="text-xs text-green-600 font-semibold">✓</span>
                                   )}
                                   <button
                                     onClick={() => openEditModal(schedule)}
