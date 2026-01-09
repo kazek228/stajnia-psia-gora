@@ -575,7 +575,8 @@ router.post('/copy-day', authenticateToken, requireRole('ADMIN'), async (req: Au
           gte: startOfDay,
           lte: endOfDay,
         },
-        status: 'SCHEDULED',
+        // Include both SCHEDULED and COMPLETED to allow copying from past dates
+        status: { in: ['SCHEDULED', 'COMPLETED'] },
       },
       include: {
         horse: true,
